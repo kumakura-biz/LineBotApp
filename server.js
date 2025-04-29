@@ -27,7 +27,7 @@ app.post("/webhook", async (req, res) => {
             messages: [
               {
                 type: "text",
-                text: `あなたのメッセージ: ${userMessage}`
+                text: `何か適当にメッセージ送ってと言われ、「 ${userMessage}」 と送ってくる君!!サイコーだぜーｗ 木村拓哉より愛をこめて`
               }
             ]
           },
