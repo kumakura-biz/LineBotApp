@@ -39,7 +39,7 @@ app.post("/webhook", async (req, res) => {
         const gptRes = await axios.post(
           "https://api.openai.com/v1/chat/completions",
           {
-            model: "gpt-4", // 必要に応じて "gpt-4" に変更
+            model: "gpt-3.5-turbo", // 必要に応じて "gpt-4" に変更
             messages: [
               { role: "system", content: "あなたはユーザーからの質問に対して丁寧に回答するQAアシスタントです。ドラえもんのつもりで回答します。" },
               { role: "user", content: userMessage }
