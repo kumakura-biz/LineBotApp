@@ -1,25 +1,61 @@
+// 必要なモジュールを読み込み
 const express = require("express");
-const axios = require("axios");  // ← 追加（LINEにメッセージ送るため）
+const axios = require("axios");
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// ==============================
+// ▼設定（自分のトークンに置き換えてください）
+// ==============================
+
+// LINE Developersで発行したチャネルアクセストークン
 const CHANNEL_ACCESS_TOKEN = "WAQ0a7to4G9xei0mpUNCNZGaNAhx+rtEMIYGARyymFZUPVSZUOJgJx42wFX/k0It4sMU7rN2BCsgbW2RmcmzBXlh2PxMAYge8TGXK4N1Jj1v1P2Z0pbi8h5t9K9pE054HS0K3eyVbbdUjkxvUGs+TQdB04t89/1O/w1cDnyilFU=";
 
+// OpenAIのAPIキー（https://platform.openai.com/account/api-keys で取得）
+const OPENAI_API_KEY = "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";
+
+// JSON形式のデータを受け取れるように設定
 app.use(express.json());
 
-app.post("/webhook", async (req, res) => {
-  console.log("Webhookイベント受信:", req.body);
+// ==============================
+// ▼Webhookエンドポイント
+// ==============================
 
-  // イベントがメッセージだったときだけ処理
+app.post("/webhook", async (req, res) => {
+  console.log("受信したデータ:", JSON.stringify(req.body, null, 2));
+
+  // イベントが存在するかチェック
   if (req.body.events && req.body.events.length > 0) {
     const event = req.body.events[0];
 
+    // テキストメッセージかどうかチェック
     if (event.type === "message" && event.message.type === "text") {
-      const userMessage = event.message.text;
-      const replyToken = event.replyToken;
+      const userMessage = event.message.text;        // ユーザーが送ったメッセージ
+      const replyToken = event.replyToken;           // 返信に必要なトークン
 
-      // LINEに返信
       try {
+        // OpenAIのChatGPTにメッセージ送信
+        const gptRes = await axios.post(
+          "https://api.openai.com/v1/chat/completions",
+          {
+            model: "gpt-4", // 必要に応じて "gpt-4" に変更
+            messages: [
+              { role: "system", content: "あなたはユーザーからの質問に対して丁寧に回答するQAアシスタントです。ドラえもんのつもりで回答します。" },
+              { role: "user", content: userMessage }
+            ]
+          },
+          {
+            headers: {
+              "Authorization": `Bearer ${OPENAI_API_KEY}`,
+              "Content-Type": "application/json"
+            }
+          }
+        );
+
+        const gptReply = gptRes.data.choices[0].message.content; // ChatGPTの返答
+
+        // LINEに返信を送る
         await axios.post(
           "https://api.line.me/v2/bot/message/reply",
           {
@@ -27,27 +63,31 @@ app.post("/webhook", async (req, res) => {
             messages: [
               {
                 type: "text",
-                text: `何か適当にメッセージ送ってと言われ、「 ${userMessage}」 と送ってくる君!!サイコーだぜーｗ　只今サウナAIコンシェルジュは準備中です。まずは近所のサウナから行ってみよう！　BY 運営管理者のキムタクより愛をこめて！`
+                text: gptReply
               }
             ]
           },
           {
             headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${CHANNEL_ACCESS_TOKEN}`
+              "Authorization": `Bearer ${CHANNEL_ACCESS_TOKEN}`,
+              "Content-Type": "application/json"
             }
           }
         );
       } catch (error) {
-        console.error("返信エラー:", error.response ? error.response.data : error.message);
+        console.error("エラー:", error.response?.data || error.message);
       }
     }
   }
 
-  // LINEに「受け取ったよ」と即レス
-  res.status(200).send("OK");
+  // LINEサーバーへステータス200（正常）を返す
+  res.sendStatus(200);
 });
 
+// ==============================
+// ▼サーバー起動
+// ==============================
+
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`サーバー起動完了。ポート番号: ${PORT}`);
 });
