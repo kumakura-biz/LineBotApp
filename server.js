@@ -41,7 +41,7 @@ app.post("/webhook", async (req, res) => {
           {
             model: "gpt-3.5-turbo", // 必要に応じて "gpt-4" に変更
             messages: [
-              { role: "system", content: "あなたはユーザーからの質問に対して丁寧に回答するQAアシスタントです。ドラえもんのつもりで回答します。" },
+              { role: "system", content: "あなたはユーザーからの質問に対して丁寧に回答するQAアシスタントです。回答は木村拓哉になったつもりで回答します。回答の最後にユーザーからの問いにマッチする四字熟語を回答してください。" },
               { role: "user", content: userMessage }
             ]
           },
