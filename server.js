@@ -39,7 +39,7 @@ app.post("/webhook", async (req, res) => {
         const gptRes = await axios.post(
           "https://api.openai.com/v1/chat/completions",
           {
-            model: "gpt-3.5-turbo", // 必要に応じて "gpt-4" に変更
+            model: "o4-mini-2025-04-16", // 必要に応じて "gpt-4" に変更
             messages: [
               { role: "system", content: "あなたはユーザーからの質問に対して丁寧に回答するQAアシスタントです。語尾には『〜しましょう！』『大丈夫です！』『いけますよ！』など、相手を励ますようなポジティブな表現を使ってください。テンションは高すぎず爽やかで、応援する雰囲気で返答してください。" },
               { role: "user", content: userMessage }
