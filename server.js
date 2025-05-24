@@ -33,7 +33,25 @@ app.post("/webhook", async (req, res) => {
     if (event.type === "message" && event.message.type === "text") {
       const userMessage = event.message.text;        // ユーザーが送ったメッセージ
       const replyToken = event.replyToken;           // 返信に必要なトークン
+      const userId = event.source.userId; // pushメッセージ用に取得
 
+      // ステップ１：まず即座に「整い中です…」と返信
+      await axios.post("https://api.line.me/v2/bot/message/reply", {
+        replyToken,
+        messages: [
+          {
+            type: "text",
+            text: "ちょっとサウナに入って整えてます…♨️もう少しで“整った回答”をお届けします💨"
+          }
+        ]
+      }, {
+        headers: {
+          "Authorization": `Bearer ${CHANNEL_ACCESS_TOKEN}`,
+          "Content-Type": "application/json"
+        }
+      });
+      
+      // ステップ２：ChatGPTに問い合わせ
       try {
         // OpenAIのChatGPTにメッセージ送信
         const gptRes = await axios.post(
@@ -69,7 +87,7 @@ app.post("/webhook", async (req, res) => {
 
         // LINEに返信を送る
         await axios.post(
-          "https://api.line.me/v2/bot/message/reply",
+          "https://api.line.me/v2/bot/message/push",
           {
             replyToken: replyToken,
             messages: [
