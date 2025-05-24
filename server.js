@@ -270,7 +270,8 @@ app.post("/webhook", async (req, res) => {
               { label: "静かに整いたい", text: "静かに整いたい" },
               { label: "刺激がほしい", text: "刺激がほしい" },
               { label: "初心者向け", text: "初心者向け" },
-              { label: "とにかく高温サウナ", text: "とにかく高温サウナ" },
+              { label: "男性専用施設", text: "男性専用施設" },
+              { label: "ガチ勢", text: "ガチ勢" },
             ]);
             return res.sendStatus(200);
           case 3:
