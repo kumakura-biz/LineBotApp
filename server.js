@@ -102,7 +102,7 @@ app.post("/webhook", async (req, res) => {
       switch (userMessage) {
         case "サウナ脳語録":
           userStates[userId] = "awaitingFreeText";
-          await replyText(replyToken, "質問でも愚痴でもなんでもぶっちゃけてみませんか？サウナ脳でお答えします🧖‍");
+          await replyText(replyToken, "質問でも愚痴でもなんでもぶっちゃけてみませんか？メッセージ送信してくれれば、サウナ脳でお答えします🧖‍");
           return res.sendStatus(200);
 
         case "準備中１":
