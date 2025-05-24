@@ -140,7 +140,7 @@ app.post("/webhook", async (req, res) => {
 
         case "気まぐれプラン":
           userStates[userId] = { plan: "flgBasicPlan", step: 1 };
-          
+
           // エリア選択（地方）
           await replyQuickReply(replyToken, "どこの地方で整いたいですか？", [
             { label: "北海道・東北", text: "北海道・東北" },
@@ -175,29 +175,29 @@ app.post("/webhook", async (req, res) => {
       // ***************************************
       // メイン処理（選択メニューで処理分岐）
       // ***************************************
-        // ***************************************
-        // サウナ脳語録の場合
-        // ***************************************
-  if (userStates[userId] === "flgSaunaBrain") {
-          userStates[userId] = "idle"; // 1度限り許可
+      // ***************************************
+      // サウナ脳語録の場合
+      // ***************************************
+      if (userStates[userId] === "flgSaunaBrain") {
+        userStates[userId] = "idle"; // 1度限り許可
 
-          // LINEに返信を送る（回答準備中メッセージ）
-          await replyText(
-            replyToken,
-            "ちょっとサウナに入って整えてます…♨️もう少しで“整った回答”をお届けします💨"
-          );
+        // LINEに返信を送る（回答準備中メッセージ）
+        await replyText(
+          replyToken,
+          "ちょっとサウナに入って整えてます…♨️もう少しで“整った回答”をお届けします💨"
+        );
 
-          // ChatGPTに問い合わせ
-          try {
-            // OpenAIのChatGPTにメッセージ送信
-            const gptRes = await axios.post(
-              "https://api.openai.com/v1/chat/completions",
-              {
-                model: "o4-mini-2025-04-16",
-                messages: [
-                  {
-                    role: "system",
-                    content: `あなたはユーザーからの質問に対してすべてサウナに例えて回答するQAアシスタントです。
+        // ChatGPTに問い合わせ
+        try {
+          // OpenAIのChatGPTにメッセージ送信
+          const gptRes = await axios.post(
+            "https://api.openai.com/v1/chat/completions",
+            {
+              model: "o4-mini-2025-04-16",
+              messages: [
+                {
+                  role: "system",
+                  content: `あなたはユーザーからの質問に対してすべてサウナに例えて回答するQAアシスタントです。
                  語尾には『〜しましょう！』『大丈夫です！』『いけますよ！』など、相手を励ますようなポジティブな表現やサウナ―が喜びそうな表現を使ってください。
                  テンションは高すぎず爽やかで、応援する雰囲気で返答してください。
                  回答は200字以内です。
@@ -205,192 +205,119 @@ app.post("/webhook", async (req, res) => {
                  その際、読み方と解説をいれてください。『解説』って言葉は不要です。
                  なお、読み方は漢字の部分だけでよいです。
                  記載形式は、『新語（読み方）：解説』でお願いします。`,
-                  },
-                  { role: "user", content: userMessage },
-                ],
-              },
-              {
-                headers: {
-                  Authorization: `Bearer ${OPENAI_API_KEY}`,
-                  "Content-Type": "application/json",
                 },
-              }
-            );
-
-            // ChatGPTの返答
-            const gptReply = gptRes.data.choices[0].message.content;
-
-            // LINEに返信を送る
-            await pushText(userId, gptReply);
-          } catch (error) {
-            console.error(
-              "ChatGPTエラー:",
-              error.response?.data || error.message
-            );
-          }
-
-          // LINEサーバーへステータス200（正常）を返す
-          return res.sendStatus(200);
-  }
-        // ***************************************
-        // 気まぐれプランの場合
-        // ***************************************
-        case "flg_BasicPlan":
-          if (
-            typeof userStates[userId] === "object" &&
-            userStates[userId].step === 1
-          ) {
-            // エリア選択（当道府県）
-            userStates[userId].area1 = userMessage;
-            userStates[userId].step = 2;
-
-            switch (userStates[userId].area1) {
-              case "北海道・東北":
-                await replyQuickReply(
-                  replyToken,
-                  "どこの地域で整いたいですか？",
-                  [
-                    { label: "北海道", text: "北海道" },
-                    { label: "青森県", text: "青森県" },
-                    { label: "岩手県", text: "岩手県" },
-                    { label: "宮城県", text: "宮城県" },
-                    { label: "秋田県", text: "秋田県" },
-                    { label: "山形県", text: "山形県" },
-                    { label: "福島県", text: "福島県" },
-                  ]
-                );
-                return res.sendStatus(200);
-
-              case "関東":
-                await replyQuickReply(
-                  replyToken,
-                  "どこの地域で整いたいですか？",
-                  [
-                    { label: "茨城県", text: "茨城県" },
-                    { label: "栃木県", text: "栃木県" },
-                    { label: "群馬県", text: "群馬県" },
-                    { label: "埼玉県", text: "埼玉県" },
-                    { label: "千葉県", text: "千葉県" },
-                    { label: "東京都", text: "東京都" },
-                    { label: "神奈川県", text: "神奈川県" },
-                  ]
-                );
-                return res.sendStatus(200);
-
-              case "北陸":
-                await replyQuickReply(
-                  replyToken,
-                  "どこの地域で整いたいですか？",
-                  [
-                    { label: "新潟県", text: "新潟県" },
-                    { label: "富山県", text: "富山県" },
-                    { label: "石川県", text: "石川県" },
-                    { label: "福井県", text: "福井県" },
-                  ]
-                );
-                return res.sendStatus(200);
-
-              case "甲信":
-                await replyQuickReply(
-                  replyToken,
-                  "どこの地域で整いたいですか？",
-                  [
-                    { label: "山梨県", text: "山梨県" },
-                    { label: "長野県", text: "長野県" },
-                  ]
-                );
-                return res.sendStatus(200);
-
-              case "東海":
-                await replyQuickReply(
-                  replyToken,
-                  "どこの地域で整いたいですか？",
-                  [
-                    { label: "岐阜県", text: "岐阜県" },
-                    { label: "静岡県", text: "静岡県" },
-                    { label: "愛知県", text: "愛知県" },
-                    { label: "三重県", text: "三重県" },
-                  ]
-                );
-                return res.sendStatus(200);
-
-              case "近畿":
-                await replyQuickReply(
-                  replyToken,
-                  "どこの地域で整いたいですか？",
-                  [
-                    { label: "滋賀県", text: "滋賀県" },
-                    { label: "京都府", text: "京都府" },
-                    { label: "大阪府", text: "大阪府" },
-                    { label: "兵庫県", text: "兵庫県" },
-                    { label: "奈良県", text: "奈良県" },
-                    { label: "和歌山県", text: "和歌山県" },
-                  ]
-                );
-                return res.sendStatus(200);
-
-              case "中国":
-                await replyQuickReply(
-                  replyToken,
-                  "どこの地域で整いたいですか？",
-                  [
-                    { label: "鳥取県", text: "鳥取県" },
-                    { label: "島根県", text: "島根県" },
-                    { label: "岡山県", text: "岡山県" },
-                    { label: "広島県", text: "広島県" },
-                    { label: "山口県", text: "山口県" },
-                  ]
-                );
-                return res.sendStatus(200);
-
-              case "四国":
-                await replyQuickReply(
-                  replyToken,
-                  "どこの地域で整いたいですか？",
-                  [
-                    { label: "徳島県", text: "徳島県" },
-                    { label: "香川県", text: "香川県" },
-                    { label: "愛媛県", text: "愛媛県" },
-                    { label: "高知県", text: "高知県" },
-                  ]
-                );
-                return res.sendStatus(200);
-
-              case "九州・沖縄":
-                await replyQuickReply(
-                  replyToken,
-                  "どこの地域で整いたいですか？",
-                  [
-                    { label: "福岡県", text: "福岡県" },
-                    { label: "佐賀県", text: "佐賀県" },
-                    { label: "長崎県", text: "長崎県" },
-                    { label: "熊本県", text: "熊本県" },
-                    { label: "大分県", text: "大分県" },
-                    { label: "宮崎県", text: "宮崎県" },
-                    { label: "鹿児島県", text: "鹿児島県" },
-                    { label: "沖縄県", text: "沖縄県" },
-                  ]
-                );
-                return res.sendStatus(200);
+                { role: "user", content: userMessage },
+              ],
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${OPENAI_API_KEY}`,
+                "Content-Type": "application/json",
+              },
             }
-          }
-          await replyQuickReply(replyToken, "どんな気分で整いたいですか？", [
-            { label: "リフレッシュ", text: "リフレッシュ" },
-            { label: "静かに整いたい", text: "静かに整いたい" },
-            { label: "刺激がほしい", text: "刺激がほしい" },
-            { label: "初心者向け", text: "初心者向け" },
-          ]);
-          return res.sendStatus(200);
+          );
 
-        // ***************************************
-        // リッチメニューからの操作でない場合
-        // ***************************************
-        default:
-          await replyText(replyToken, "メニューから操作を始めてください🧖‍♂️");
+          // ChatGPTの返答
+          const gptReply = gptRes.data.choices[0].message.content;
+
+          // LINEに返信を送る
+          await pushText(userId, gptReply);
+        } catch (error) {
+          console.error(
+            "ChatGPTエラー:",
+            error.response?.data || error.message
+          );
+        }
+
+        // LINEサーバーへステータス200（正常）を返す
+        return res.sendStatus(200);
       }
+
+      // ***************************************
+      // 気まぐれプランの場合
+      // ***************************************
+      if (
+        typeof userStates[userId] === "object" &&
+        userStates[userId].plan === "basic"
+      ) {
+        const state = userStates[userId];
+        switch (state.step) {
+          case 1:
+            state.area1 = userMessage;
+            state.step = 2;
+            const map = {
+              "関東": ["茨城県","栃木県","群馬県","埼玉県","千葉県","東京都","神奈川県",],
+              "北海道・東北": ["北海道","青森県","岩手県","宮城県","秋田県","山形県","福島県",],
+              "北陸": ["新潟県","富山県","石川県","福井県"],
+              "甲信": ["山梨県","長野県"],
+              "東海": ["岐阜県","静岡県","愛知県","三重県"],
+              "近畿": ["滋賀県","京都府","大阪府","兵庫県","奈良県","和歌山県",],
+              "中国": ["鳥取県","島根県","岡山県","広島県","山口県"],
+              "四国": ["徳島県","香川県","愛媛県","高知県"],
+              "九州・沖縄": ["福岡県","佐賀県","長崎県","熊本県","大分県","宮崎県","鹿児島県","沖縄県",],
+            };
+            if (map[state.area1]) {
+              await replyQuickReply(
+                replyToken,
+                "どこの地域で整いたいですか？",
+                map[state.area1].map((p) => ({ label: p, text: p }))
+              );
+              return res.sendStatus(200);
+            }
+            break;
+          case 2:
+            state.area2 = userMessage;
+            state.step = 3;
+            await replyQuickReply(replyToken, "どんな気分で整いたいですか？", [
+              { label: "リフレッシュ", text: "リフレッシュ" },
+              { label: "静かに整いたい", text: "静かに整いたい" },
+              { label: "刺激がほしい", text: "刺激がほしい" },
+              { label: "初心者向け", text: "初心者向け" },
+            ]);
+            return res.sendStatus(200);
+          case 3:
+            const mood = userMessage;
+            const area2 = state.area2;
+            delete userStates[userId];
+            await replyText(replyToken, "おすすめをととのえ中…♨️");
+            const prompt = `${area2}で${mood}気分にぴったりのサウナを探しています。おすすめは？`;
+            try {
+              const gptRes = await axios.post(
+                "https://api.openai.com/v1/chat/completions",
+                {
+                  model: "o4-mini-2025-04-16",
+                  messages: [
+                    {
+                      role: "system",
+                      content: "整い案内人として100字＋新語提示。",
+                    },
+                    { role: "user", content: prompt },
+                  ],
+                },
+                {
+                  headers: {
+                    Authorization: `Bearer ${OPENAI_API_KEY}`,
+                    "Content-Type": "application/json",
+                  },
+                }
+              );
+              const gptReply = gptRes.data.choices[0].message.content;
+              await pushText(userId, gptReply);
+            } catch (error) {
+              console.error("GPT Error:", error.message);
+            }
+            return res.sendStatus(200);
+        }
+      }
+
+      // ***************************************
+      // リッチメニューからの操作でない場合
+      // ***************************************
+      await replyText(replyToken, "メニューから操作を始めてください🧖‍♂️");
+
+      res.sendStatus(200);
     }
   }
-  res.sendStatus(200);
 });
 
 // ***************************************
