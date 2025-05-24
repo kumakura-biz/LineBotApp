@@ -110,6 +110,22 @@ app.post("/webhook", async (req, res) => {
       const replyToken = event.replyToken; // 返信に必要なトークン
       const userId = event.source.userId; // pushメッセージ用に取得
 
+axios.get("https://api.line.me/v2/bot/richmenu/list", {
+  headers: {
+    Authorization: `Bearer ${CHANNEL_ACCESS_TOKEN}`
+  }
+})
+.then(res => console.log(res.data.ri))
+.catch(err => console.error(err.response?.data || err.message));
+      
+.then(res => {
+  const menus = res.data.richmenus;
+  menus.forEach(menu => {
+    console.log(`名前: ${menu.name} / ID: ${menu.richMenuId}`);
+  });
+})
+.catch(err => console.error(err.response?.data || err.message));
+      
       // ***************************************
       // リッチメニューからの入力判定
       // ***************************************
