@@ -384,7 +384,7 @@ app.post("/webhook", async (req, res) => {
                     key: GOOGLE_API_KEY,
                     cx: GOOGLE_CX,
                     q: searchQuery,
-                    num: 3,
+                    num: 5,
                   },
                 }
               );
@@ -421,13 +421,12 @@ app.post("/webhook", async (req, res) => {
                       role: "system",
                       content: `あなたはユーザーから指定された地域と気分や、世の中のサウナ―の評価なども踏まえ、最適なサウナ施設を紹介するアシスタントです。
                      紹介施設は3つを上限としてください。
-                     施設ごとに番号を振ってください。
                      紹介された施設に訪問したくなるサウナ―の心をくすぐるような表現で紹介してください。
                      その際、大袈裟で胡散臭い表現はやめてください。
                      サウナの種類、水風呂の種類、外気浴有無、整いベッド有無、オートロウリュウ有無、アウフグース有無、マッサージ施設、食事施設なども提示情報に含めてください。
                      いい感じに改行を含めてください。
                      1000文字以内としてください。
-                     施設などのURLは一切不要です。`,
+                     施設のURLは不要です。`,
                     },
                     {
                       role: "user",
@@ -443,32 +442,11 @@ app.post("/webhook", async (req, res) => {
                 }
               );
 
-              const gptText = gptRes.data.choices[0].message.content;
+              // GPTの返答
+              const gptReply = gptRes.data.choices[0].message.content;
 
-              // GPTの回答にGoogle検索で取得した正しいURLを追記
-              const lines = gptText.split('\n');
-              const enrichedLines = [];
-
-              for (let i = 0; i < lines.length; i++) {
-                const line = lines[i];
-                enrichedLines.push(line);
-
-                // 施設名らしき行にURLを追記
-                const normalized = line.replace(/\s+/g, "").toLowerCase();
-                for (const key in linksMap) {
-                  if (normalized.includes(key)) {
-                    enrichedLines.push(`👉 ${linksMap[key]}`);
-                    break;
-                  }
-                }
-              }
-
-              // 返答内容成形後
-              const finalReply = enrichedLines.join('\n');
-              
               // LINEに返信を送る
-              await pushText(userId, finalReply);
-
+              await pushText(userId, gptReply);
             } catch (error) {
               console.error("気まぐれプランエラー:", error.message);
               await pushText(
