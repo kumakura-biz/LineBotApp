@@ -122,7 +122,7 @@ app.post("/webhook", async (req, res) => {
           );
           return res.sendStatus(200);
 
-        case "準備中１":
+        case "サウナあるある":
           userStates[userId] = "idle";
           await replyText(
             replyToken,
