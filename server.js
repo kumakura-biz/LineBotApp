@@ -35,7 +35,26 @@ app.post("/webhook", async (req, res) => {
       const replyToken = event.replyToken;           // 返信に必要なトークン
       const userId = event.source.userId; // pushメッセージ用に取得
 
-      // ステップ１：まず即座に「整い中です…」と返信
+      // ステップ１：リッチメニューからの入力判定
+      if (userMessage === "サウナを探す") {
+        await axios.post("https://api.line.me/v2/bot/message/reply", {
+          replyToken,
+          messages: [
+            {
+              type: "text",
+              text: "地域や気分を入力してください🧖‍♂️ 例：渋谷でリフレッシュしたい"
+            }
+          ]
+        }, {
+          headers: {
+            Authorization: `Bearer ${CHANNEL_ACCESS_TOKEN}`,
+            "Content-Type": "application/json"
+          }
+        });
+        return res.sendStatus(200);
+      }
+      
+      // ステップ２：まず即座に「整い中です…」と返信
       await axios.post("https://api.line.me/v2/bot/message/reply", {
         replyToken,
         messages: [
@@ -51,7 +70,7 @@ app.post("/webhook", async (req, res) => {
         }
       });
       
-      // ステップ２：ChatGPTに問い合わせ
+      // ステップ３：ChatGPTに問い合わせ
       try {
         // OpenAIのChatGPTにメッセージ送信
         const gptRes = await axios.post(
@@ -89,7 +108,7 @@ app.post("/webhook", async (req, res) => {
         await axios.post(
           "https://api.line.me/v2/bot/message/push",
           {
-            replyToken: replyToken,
+            to: userId,
             messages: [
               {
                 type: "text",
