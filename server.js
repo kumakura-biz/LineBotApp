@@ -184,7 +184,7 @@ app.post("/webhook", async (req, res) => {
         // LINEに返信を送る（回答準備中メッセージ）
         await replyText(
           replyToken,
-          "ちょっとサウナに入って整えてます…♨️もう少しで“整った回答”をお届けします💨"
+          "少々お待ちを🧖‍♂️ちょっとサウナに入って整えてます…♨️もう少しで“整った回答”をお届けします💨"
         );
 
         // ChatGPTに問い合わせ
@@ -223,10 +223,7 @@ app.post("/webhook", async (req, res) => {
           // LINEに返信を送る
           await pushText(userId, gptReply);
         } catch (error) {
-          console.error(
-            "ChatGPTエラー:",
-            error.response?.data || error.message
-          );
+              console.error("GPT Error:", error.message);
         }
 
         // LINEサーバーへステータス200（正常）を返す
@@ -238,7 +235,7 @@ app.post("/webhook", async (req, res) => {
       // ***************************************
       if (
         typeof userStates[userId] === "object" &&
-        userStates[userId].plan === "basic"
+        userStates[userId].plan === "flgBasicPlan"
       ) {
         const state = userStates[userId];
         switch (state.step) {
@@ -279,7 +276,7 @@ app.post("/webhook", async (req, res) => {
             const mood = userMessage;
             const area2 = state.area2;
             delete userStates[userId];
-            await replyText(replyToken, "おすすめをととのえ中…♨️");
+            await replyText(replyToken, "少々お待ちを🧖‍♂️ちょっとサウナに入って『おすすめ施設』をととのえ中…………♨️");
             const prompt = `${area2}で${mood}気分にぴったりのサウナを探しています。おすすめは？`;
             try {
               const gptRes = await axios.post(
@@ -289,7 +286,14 @@ app.post("/webhook", async (req, res) => {
                   messages: [
                     {
                       role: "system",
-                      content: "整い案内人として100字＋新語提示。",
+                      content: `あなたはユーザーから指定された地域と気分から、最適なサウナ施設を紹介するアシスタントです。
+                     紹介施設は3つを上限としてください。
+                     テンションは高すぎず爽やかで、応援する雰囲気で返答してください。
+                     回答は200字以内です。
+                     回答の締めの言葉は、サウナ観点とユーザーからの質問を掛け合わせて、『意味のイノベーション』意識した新たな言葉としてください。
+                     その際、読み方と解説をいれてください。『解説』って言葉は不要です。
+                     なお、読み方は漢字の部分だけでよいです。
+                     記載形式は、『新語（読み方）：解説』でお願いします。`,
                     },
                     { role: "user", content: prompt },
                   ],
@@ -301,11 +305,17 @@ app.post("/webhook", async (req, res) => {
                   },
                 }
               );
+              
+              // ChatGPTの返答
               const gptReply = gptRes.data.choices[0].message.content;
+              
+              // LINEに返信を送る
               await pushText(userId, gptReply);
             } catch (error) {
               console.error("GPT Error:", error.message);
             }
+            
+            // LINEサーバーへステータス200（正常）を返す
             return res.sendStatus(200);
         }
       }
