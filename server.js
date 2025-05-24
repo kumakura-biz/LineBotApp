@@ -139,8 +139,7 @@ app.post("/webhook", async (req, res) => {
           return res.sendStatus(200);
 
         case "気まぐれプラン":
-          userStates[userId] = "flg_BasicPlan";
-          //userStates[userId] = { step: 1 };
+          userStates[userId] = { plan: "flgBasicPlan", step: 1 };
           
           // エリア選択（地方）
           await replyQuickReply(replyToken, "どこの地方で整いたいですか？", [
@@ -176,11 +175,10 @@ app.post("/webhook", async (req, res) => {
       // ***************************************
       // メイン処理（選択メニューで処理分岐）
       // ***************************************
-      switch (userStates[userId]) {
         // ***************************************
         // サウナ脳語録の場合
         // ***************************************
-        case "flgSaunaBrain":
+  if (userStates[userId] === "flgSaunaBrain") {
           userStates[userId] = "idle"; // 1度限り許可
 
           // LINEに返信を送る（回答準備中メッセージ）
@@ -188,8 +186,6 @@ app.post("/webhook", async (req, res) => {
             replyToken,
             "ちょっとサウナに入って整えてます…♨️もう少しで“整った回答”をお届けします💨"
           );
-
-          return res.sendStatus(200);
 
           // ChatGPTに問い合わせ
           try {
@@ -234,8 +230,8 @@ app.post("/webhook", async (req, res) => {
           }
 
           // LINEサーバーへステータス200（正常）を返す
-          res.sendStatus(200);
-
+          return res.sendStatus(200);
+  }
         // ***************************************
         // 気まぐれプランの場合
         // ***************************************
