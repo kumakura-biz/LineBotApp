@@ -5,9 +5,10 @@ const axios = require("axios");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ***************************************
-// ▼設定
-// ***************************************
+// *********************************************************************************************************************
+// 設定
+// *********************************************************************************************************************
+
 // LINE Developersで発行したチャネルアクセストークン
 const CHANNEL_ACCESS_TOKEN = "WAQ0a7to4G9xei0mpUNCNZGaNAhx+rtEMIYGARyymFZUPVSZUOJgJx42wFX/k0It4sMU7rN2BCsgbW2RmcmzBXlh2PxMAYge8TGXK4N1Jj1v1P2Z0pbi8h5t9K9pE054HS0K3eyVbbdUjkxvUGs+TQdB04t89/1O/w1cDnyilFU=";
 
@@ -20,7 +21,12 @@ app.use(express.json());
 // ユーザー状態保存用（開発用、サーバー再起動でリセット）
 const userStates = {}; // 例: { "Uxxxx": "awaitingFreeText" }
 
-// 共通関数：返信（reply）
+
+// *********************************************************************************************************************
+// 共通関数
+// *********************************************************************************************************************
+
+// 返信（reply）
 const replyText = async (token, text) => {
   await axios.post("https://api.line.me/v2/bot/message/reply", {
     replyToken: token,
@@ -33,7 +39,7 @@ const replyText = async (token, text) => {
   });
 };
 
-// 共通関数：Push送信
+// Push送信
 const pushText = async (userId, text) => {
   await axios.post("https://api.line.me/v2/bot/message/push", {
     to: userId,
@@ -46,9 +52,9 @@ const pushText = async (userId, text) => {
   });
 };
 
-// ==============================
-// ▼Webhookエンドポイント
-// ==============================
+// *********************************************************************************************************************
+// Webhookエンドポイント
+// *********************************************************************************************************************
 
 app.post("/webhook", async (req, res) => {
   console.log("受信したデータ:", JSON.stringify(req.body, null, 2));
@@ -61,49 +67,52 @@ app.post("/webhook", async (req, res) => {
     if (event.type === "message" && event.message.type === "text") {
       const userMessage = event.message.text;        // ユーザーが送ったメッセージ
       const replyToken = event.replyToken;           // 返信に必要なトークン
-      const userId = event.source.userId; // pushメッセージ用に取得
+      const userId = event.source.userId;            // pushメッセージ用に取得
 
       // ***************************************
       // ステップ１：リッチメニューからの入力判定
       // ***************************************
-      if (userMessage === "サウナ脳語録") {
-        await axios.post("https://api.line.me/v2/bot/message/reply", {
-          replyToken,
-          messages: [
-            {
-              type: "text",
-              text: "質問でも愚痴でもなんでもぶっちゃけてみませんか？サウナ脳でお答えします🧖‍"
-            }
-          ]
-        }, {
-          headers: {
-            Authorization: `Bearer ${CHANNEL_ACCESS_TOKEN}`,
-            "Content-Type": "application/json"
-          }
-        });
-        return res.sendStatus(200);
+      
+      switch (userMessage) {
+        case "サウナ脳語録":
+          userStates[userId] = "awaitingFreeText";
+          await replyText(replyToken, "質問でも愚痴でもなんでもぶっちゃけてみませんか？サウナ脳でお答えします🧖‍");
+          return res.sendStatus(200);
+
+        case "準備中１":
+          userStates[userId] = "idle";
+          await replyText(replyToken, "現在準備中です。気分次第で現れます。ひょっこり登場かも？");
+          return res.sendStatus(200);
+
+        case "準備中２":
+          userStates[userId] = "idle";
+          await replyText(replyToken, "現在準備中です✨お楽しみに！");
+          return res.sendStatus(200);
+
+        case "気まぐれプラン":
+          userStates[userId] = "idle";
+          await replyText(replyToken, "『気まぐれプラン』はただいま蒸され中…♨️ 準備完了までしばしお待ちを");
+          return res.sendStatus(200);
+
+        case "整いマイスタープラン":
+          userStates[userId] = "idle";
+          await replyText(replyToken, "『整いマイスタープラン』はただいま蒸され中…♨️ 準備完了までしばしお待ちを");
+          return res.sendStatus(200);
+
+        case "サウナ仙人プラン":
+          userStates[userId] = "idle";
+          await replyText(replyToken, "『サウナ仙人プラン』はただいま蒸され中…♨️ 準備完了までしばしお待ちを");
+          return res.sendStatus(200);
       }
-      
-      
-      
-      
+  
       // ***************************************
       // ステップ２：まず即座に「整い中です…」と返信
       // ***************************************
-      await axios.post("https://api.line.me/v2/bot/message/reply", {
-        replyToken,
-        messages: [
-          {
-            type: "text",
-            text: "ちょっとサウナに入って整えてます…♨️もう少しで“整った回答”をお届けします💨"
-          }
-        ]
-      }, {
-        headers: {
-          "Authorization": `Bearer ${CHANNEL_ACCESS_TOKEN}`,
-          "Content-Type": "application/json"
-        }
-      });
+      
+      if (userStates[userId] === "awaitingFreeText") {
+        userStates[userId] = "idle"; // 1度限り許可
+
+        await replyText(replyToken, "ちょっとサウナに入って整えてます…♨️もう少しで“整った回答”をお届けします💨");
       
       // ***************************************
       // ステップ３：ChatGPTに問い合わせ
