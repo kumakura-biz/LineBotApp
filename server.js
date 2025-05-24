@@ -18,12 +18,10 @@ const OPENAI_API_KEY =
   "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";
 
 // Google APIキー
-const GOOGLE_API_KEY = 
-      "AIzaSyD0WWHV8zI8BwrPmvEN8TmAEAMRJrBe-OA"
+const GOOGLE_API_KEY = "AIzaSyD0WWHV8zI8BwrPmvEN8TmAEAMRJrBe-OA";
 
 // Google検索エンジンID
-const GOOGLE_CX = 
-      "c0a13d84d771943a4"
+const GOOGLE_CX = "c0a13d84d771943a4";
 
 // JSON形式のデータを受け取れるように設定
 app.use(express.json());
@@ -118,16 +116,6 @@ app.post("/webhook", async (req, res) => {
       const replyToken = event.replyToken; // 返信に必要なトークン
       const userId = event.source.userId; // pushメッセージ用に取得
 
-axios.get("https://api.line.me/v2/bot/richmenu/list", {
-  headers: {
-    Authorization: `Bearer ${CHANNEL_ACCESS_TOKEN}`
-  }
-})
-      .then(res => console.log("Bot info:", res.data))
-//.then(res => res.data.richmenus.forEach(m => console.log(`${m.name}: ${m.richMenuId}`)))
-.catch(err => console.error(err.response?.data || err.message));
-      
-      
       // ***************************************
       // リッチメニューからの入力判定
       // ***************************************
@@ -241,7 +229,7 @@ axios.get("https://api.line.me/v2/bot/richmenu/list", {
           // LINEに返信を送る
           await pushText(userId, gptReply);
         } catch (error) {
-              console.error("GPT Error:", error.message);
+          console.error("GPT Error:", error.message);
         }
 
         // LINEサーバーへステータス200（正常）を返す
@@ -292,13 +280,13 @@ axios.get("https://api.line.me/v2/bot/richmenu/list", {
           // LINEに返信を送る
           await pushText(userId, gptReply);
         } catch (error) {
-              console.error("GPT Error:", error.message);
+          console.error("GPT Error:", error.message);
         }
 
         // LINEサーバーへステータス200（正常）を返す
         return res.sendStatus(200);
       }
-      
+
       // ***************************************
       // 気まぐれプランの場合
       // ***************************************
@@ -312,8 +300,8 @@ axios.get("https://api.line.me/v2/bot/richmenu/list", {
             state.area1 = userMessage;
             state.step = 2;
             const map = {
-              "関東": ["茨城県","栃木県","群馬県","埼玉県","千葉県","東京都","神奈川県",],
               "北海道・東北": ["北海道","青森県","岩手県","宮城県","秋田県","山形県","福島県",],
+              "関東": ["茨城県","栃木県","群馬県","埼玉県","千葉県","東京都","神奈川県",],
               "北陸": ["新潟県","富山県","石川県","福井県"],
               "甲信": ["山梨県","長野県"],
               "東海": ["岐阜県","静岡県","愛知県","三重県"],
@@ -321,6 +309,7 @@ axios.get("https://api.line.me/v2/bot/richmenu/list", {
               "中国": ["鳥取県","島根県","岡山県","広島県","山口県"],
               "四国": ["徳島県","香川県","愛媛県","高知県"],
               "九州・沖縄": ["福岡県","佐賀県","長崎県","熊本県","大分県","宮崎県","鹿児島県","沖縄県",],
+
             };
             if (map[state.area1]) {
               await replyQuickReply(
@@ -350,42 +339,53 @@ axios.get("https://api.line.me/v2/bot/richmenu/list", {
 
             // LINEに返信を送る（回答準備中メッセージ）
             await replyText(
-             replyToken,
-             "少々お待ちを🧖‍♂️ちょっとサウナに入って『おすすめ施設』をととのえ中…………♨️"
-            );              
-            
+              replyToken,
+              "少々お待ちを🧖‍♂️ちょっとサウナに入って『おすすめ施設』をととのえ中…………♨️"
+            );
+
             // 検索クエリ
             const searchQuery = `${area2} サウナ ${mood} おすすめ`;
-            
-              try {
-    // Google検索でスニペット取得
-    const googleRes = await axios.get("https://www.googleapis.com/customsearch/v1", {
-      params: {
-        key: GOOGLE_API_KEY,
-        cx: GOOGLE_CX,
-        q: searchQuery,
-        num: 3,
-      },
-    });
 
-    const items = googleRes.data.items || [];
-    const snippets = items.map((item) => `・${item.snippet}`).join('\n');
+            try {
+              // Google検索でスニペット取得
+              const googleRes = await axios.get(
+                "https://www.googleapis.com/customsearch/v1",
+                {
+                  params: {
+                    key: GOOGLE_API_KEY,
+                    cx: GOOGLE_CX,
+                    q: searchQuery,
+                    num: 5,
+                  },
+                }
+              );
 
-    if (snippets.length === 0) {
-      await pushText(userId, "Google検索では関連情報が見つかりませんでした。");
-      return res.sendStatus(200);
-    }
+              const items = googleRes.data.items || [];
+              const snippets = items
+                .map((item) => `・${item.snippet}`)
+                .join("\n");
 
-    // GPTに問い合わせ（スニペット + プロンプト）
-    const gptPrompt = `以下のGoogle検索スニペットを参考に、${area2}で「${mood}」気分に合うおすすめサウナ施設を3つまで紹介してください。`;
+              if (snippets.length === 0) {
+                await pushText(
+                  userId,
+                  "Google検索では関連情報が見つかりませんでした。"
+                );
+                return res.sendStatus(200);
+              }
 
-    const gptRes = await axios.post(
-      "https://api.openai.com/v1/chat/completions",
-      {
-        model: "o4-mini-2025-04-16",
-        messages: [
-          {
-            role: "system",
+              // GPTに問い合わせ（スニペット + プロンプト）
+              const gptPrompt = `以下のGoogle検索スニペットを参考に、${area2}で「${mood}」気分に合うおすすめサウナ施設を3つまで紹介してください。`;
+
+              console.log("スニペット + プロンプト");
+              console.log(`${gptPrompt}\n\nスニペット情報:\n${snippets}`);
+              
+              const gptRes = await axios.post(
+                "https://api.openai.com/v1/chat/completions",
+                {
+                  model: "o4-mini-2025-04-16",
+                  messages: [
+                    {
+                      role: "system",
                       content: `あなたはユーザーから指定された地域と気分や、世の中のサウナ―の評価なども踏まえ、最適なサウナ施設を紹介するアシスタントです。
                      紹介施設は3つを上限としてください。
                      紹介された施設に訪問したくなるサウナ―の心をくすぐるような表現で紹介してください。
@@ -393,37 +393,39 @@ axios.get("https://api.line.me/v2/bot/richmenu/list", {
                      また、紹介施設のURLも提示してください。
                      サウナの種類、水風呂の種類、外気浴有無、整いベッド有無、オートロウリュウ有無、アウフグース有無、マッサージ施設、食事施設なども提示情報に含めてください。
                      いい感じに改行を含めてください。
-                     500文字以上などあまりにも回答文字数が多くなる場合は、URL参照でもOKです。`
-          },
-          {
-            role: "user",
-            content: `${gptPrompt}\n\nスニペット情報:\n${snippets}`,
-          },
-        ],
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${OPENAI_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+                     500文字以上などあまりにも回答文字数が多くなる場合は、URL参照でもOKです。`,
+                    },
+                    {
+                      role: "user",
+                      content: `${gptPrompt}\n\nスニペット情報:\n${snippets}`,
+                    },
+                  ],
+                },
+                {
+                  headers: {
+                    Authorization: `Bearer ${OPENAI_API_KEY}`,
+                    "Content-Type": "application/json",
+                  },
+                }
+              );
 
-    // GPTの返答
-    const gptReply = gptRes.data.choices[0].message.content;
+              // GPTの返答
+              const gptReply = gptRes.data.choices[0].message.content;
 
-    // LINEに返信を送る
-    await pushText(userId, gptReply);
-  } catch (error) {
-    console.error("気まぐれプランエラー:", error.message);
-    await pushText(userId, "申し訳ありません、情報取得に失敗しました。");
-  }
+              // LINEに返信を送る
+              await pushText(userId, gptReply);
+            } catch (error) {
+              console.error("気まぐれプランエラー:", error.message);
+              await pushText(
+                userId,
+                "申し訳ありません、情報取得に失敗しました。"
+              );
+            }
 
-  // LINEサーバーへステータス200（正常）を返す
-  return res.sendStatus(200);
-            
-            
-            /*
+            // LINEサーバーへステータス200（正常）を返す
+            return res.sendStatus(200);
+
+          /*
             // プロンプト
             const prompt = `${area2}で${mood}気分にぴったりのサウナを探しています。おすすめは？`;
 
