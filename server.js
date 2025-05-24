@@ -110,6 +110,7 @@ app.post("/webhook", async (req, res) => {
       const replyToken = event.replyToken; // 返信に必要なトークン
       const userId = event.source.userId; // pushメッセージ用に取得
 
+      
       // ***************************************
       // リッチメニューからの入力判定
       // ***************************************
