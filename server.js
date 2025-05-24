@@ -139,8 +139,9 @@ app.post("/webhook", async (req, res) => {
           return res.sendStatus(200);
 
         case "気まぐれプラン":
-          userStates[userId] = { step: 1 };
-
+          userStates[userId] = "flg_BasicPlan";
+          //userStates[userId] = { step: 1 };
+          
           // エリア選択（地方）
           await replyQuickReply(replyToken, "どこの地方で整いたいですか？", [
             { label: "北海道・東北", text: "北海道・東北" },
@@ -238,10 +239,12 @@ app.post("/webhook", async (req, res) => {
         // ***************************************
         // 気まぐれプランの場合
         // ***************************************
-        case typeof "object" &&　step === 1:
-
-                    // エリア選択（当道府県）
-
+        case "flg_BasicPlan":
+          if (
+            typeof userStates[userId] === "object" &&
+            userStates[userId].step === 1
+          ) {
+            // エリア選択（当道府県）
             userStates[userId].area1 = userMessage;
             userStates[userId].step = 2;
 
@@ -374,14 +377,14 @@ app.post("/webhook", async (req, res) => {
                 );
                 return res.sendStatus(200);
             }
-
-            await replyQuickReply(replyToken, "どんな気分で整いたいですか？", [
-              { label: "リフレッシュ", text: "リフレッシュ" },
-              { label: "静かに整いたい", text: "静かに整いたい" },
-              { label: "刺激がほしい", text: "刺激がほしい" },
-              { label: "初心者向け", text: "初心者向け" },
-            ]);
-            return res.sendStatus(200);
+          }
+          await replyQuickReply(replyToken, "どんな気分で整いたいですか？", [
+            { label: "リフレッシュ", text: "リフレッシュ" },
+            { label: "静かに整いたい", text: "静かに整いたい" },
+            { label: "刺激がほしい", text: "刺激がほしい" },
+            { label: "初心者向け", text: "初心者向け" },
+          ]);
+          return res.sendStatus(200);
 
         // ***************************************
         // リッチメニューからの操作でない場合
