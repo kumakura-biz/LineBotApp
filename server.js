@@ -52,6 +52,32 @@ const pushText = async (userId, text) => {
   });
 };
 
+// Quick Reply送信（共通関数）
+const replyQuickReply = async (token, text, choices) => {
+  const items = choices.map(c => ({
+    type: "action",
+    action: {
+      type: "message",
+      label: c.label,
+      text: c.text
+    }
+  }));
+
+  await axios.post("https://api.line.me/v2/bot/message/reply", {
+    replyToken: token,
+    messages: [{
+      type: "text",
+      text,
+      quickReply: { items }
+    }]
+  }, {
+    headers: {
+      Authorization: `Bearer ${CHANNEL_ACCESS_TOKEN}`,
+      "Content-Type": "application/json"
+    }
+  });
+};
+
 // *********************************************************************************************************************
 // Webhookエンドポイント
 // *********************************************************************************************************************
