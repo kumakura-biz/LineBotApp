@@ -335,27 +335,35 @@ app.post("/webhook", async (req, res) => {
             ]);
             return res.sendStatus(200);
           case 3:
-            const mood = "";
+            let mood = "";
             const area2 = state.area2;
             delete userStates[userId];
 
             switch(userMessage){
               case "リフレッシュ":
                 mood = `リフレッシュ　ストレス　マッサージ`;
+                break;
               case "ゆったり静か":
                 mood = `ゆったり　静か　混雑してない`;
+                break;
               case "ガチ勢":
                 mood = `高温　灼熱　水風呂キンキン　サウナハット`;
+                break;
               case "グループ":
-                mood = "会話　友人　カップル　夫婦";
+                mood = `会話　友人　カップル　夫婦`;
+                break;
               case "プライベート":
-                mood = "プライベートサウナ";
+                mood = `プライベートサウナ`;
+                break;
               case "自然・景色":
-                mood = "自然　景色　川サウナ　湖畔サウナ";
+                mood = `自然　景色　川サウナ　湖畔サウナ`;
+                break;
               case "初心者":
-                mood = "初心者";
+                mood = `初心者`;
+                break;
               case "男性専用施設":
-                mood = "男性専用施設";                
+                mood = `男性専用施設`;                
+                break;
             }
               
             // LINEに返信を送る（回答準備中メッセージ）
@@ -376,7 +384,7 @@ app.post("/webhook", async (req, res) => {
                     key: GOOGLE_API_KEY,
                     cx: GOOGLE_CX,
                     q: searchQuery,
-                    num: 5,
+                    num: 3,
                   },
                 }
               );
@@ -411,10 +419,10 @@ app.post("/webhook", async (req, res) => {
                      紹介施設は3つを上限としてください。
                      紹介された施設に訪問したくなるサウナ―の心をくすぐるような表現で紹介してください。
                      その際、大袈裟で胡散臭い表現はやめてください。
-                     また、紹介施設のURLも提示してください。
                      サウナの種類、水風呂の種類、外気浴有無、整いベッド有無、オートロウリュウ有無、アウフグース有無、マッサージ施設、食事施設なども提示情報に含めてください。
                      いい感じに改行を含めてください。
-                     500文字以上などあまりにも回答文字数が多くなる場合は、URL参照でもOKです。`,
+                     500文字以内としてください。
+                     施設などのURLは一切不要です。`,
                     },
                     {
                       role: "user",
