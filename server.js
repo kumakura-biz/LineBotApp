@@ -109,79 +109,71 @@ app.post("/webhook", async (req, res) => {
       // ステップ２：まず即座に「整い中です…」と返信
       // ***************************************
       
+      // 許可された自由入力の場合（リッチメニューからの操作）
       if (userStates[userId] === "awaitingFreeText") {
         userStates[userId] = "idle"; // 1度限り許可
 
+        // LINEに返信を送る
         await replyText(replyToken, "ちょっとサウナに入って整えてます…♨️もう少しで“整った回答”をお届けします💨");
       
       // ***************************************
       // ステップ３：ChatGPTに問い合わせ
       // ***************************************
-      try {
-        // OpenAIのChatGPTにメッセージ送信
-        const gptRes = await axios.post(
-          "https://api.openai.com/v1/chat/completions",
-          {
-            model: "o4-mini-2025-04-16", // 必要に応じて "gpt-4" に変更
-            messages: [
-              { role: "system", 
-                content: 
-               `あなたはユーザーからの質問に対してすべてサウナに例えて回答するQAアシスタントです。
-               語尾には『〜しましょう！』『大丈夫です！』『いけますよ！』など、相手を励ますようなポジティブな表現やサウナ―が喜びそうな表現を使ってください。
-               テンションは高すぎず爽やかで、応援する雰囲気で返答してください。
-               回答は100字以内です。
-               回答の締めの言葉は、サウナ観点とユーザーからの質問を掛け合わせて、『意味のイノベーション』意識した新たな言葉としてください。
-               その際、読み方と解説をいれてください。『解説』って言葉は不要です。
-               なお、読み方は漢字の部分だけでよいです。
-               記載形式は、『新語（読み方）：解説』でお願いします。`
-              },
-              { role: "user", 
-                content: userMessage 
+        try {
+          // OpenAIのChatGPTにメッセージ送信
+          const gptRes = await axios.post(
+            "https://api.openai.com/v1/chat/completions",
+            {
+              model: "o4-mini-2025-04-16", // 必要に応じて "gpt-4" に変更
+              messages: [
+                { role: "system", 
+                  content: 
+                 `あなたはユーザーからの質問に対してすべてサウナに例えて回答するQAアシスタントです。
+                 語尾には『〜しましょう！』『大丈夫です！』『いけますよ！』など、相手を励ますようなポジティブな表現やサウナ―が喜びそうな表現を使ってください。
+                 テンションは高すぎず爽やかで、応援する雰囲気で返答してください。
+                 回答は100字以内です。
+                 回答の締めの言葉は、サウナ観点とユーザーからの質問を掛け合わせて、『意味のイノベーション』意識した新たな言葉としてください。
+                 その際、読み方と解説をいれてください。『解説』って言葉は不要です。
+                 なお、読み方は漢字の部分だけでよいです。
+                 記載形式は、『新語（読み方）：解説』でお願いします。`
+                },
+                { role: "user", 
+                  content: userMessage 
+                }
+              ]
+            },
+            {
+              headers: {
+                "Authorization": `Bearer ${OPENAI_API_KEY}`,
+                "Content-Type": "application/json"
               }
-            ]
-          },
-          {
-            headers: {
-              "Authorization": `Bearer ${OPENAI_API_KEY}`,
-              "Content-Type": "application/json"
             }
-          }
-        );
+          );
+          
+          // ChatGPTの返答
+          const gptReply = gptRes.data.choices[0].message.content; 
 
-        const gptReply = gptRes.data.choices[0].message.content; // ChatGPTの返答
+          // LINEに返信を送る
+          await pushText(userId, gptReply);
 
-        // LINEに返信を送る
-        await axios.post(
-          "https://api.line.me/v2/bot/message/push",
-          {
-            to: userId,
-            messages: [
-              {
-                type: "text",
-                text: gptReply
-              }
-            ]
-          },
-          {
-            headers: {
-              "Authorization": `Bearer ${CHANNEL_ACCESS_TOKEN}`,
-              "Content-Type": "application/json"
-            }
-          }
-        );
-      } catch (error) {
-        console.error("エラー:", error.response?.data || error.message);
+        } catch (error) {
+          console.error("ChatGPTエラー:", error.response?.data || error.message);
+        }
+
+        // LINEサーバーへステータス200（正常）を返す
+        res.sendStatus(200);
       }
+        
+      // 許可されいない入力の場合（リッチメニューからの操作でない
+      await replyText(replyToken, "リッチメニューから操作を始めてください🧖‍♂️");
     }
   }
-
-  // LINEサーバーへステータス200（正常）を返す
   res.sendStatus(200);
 });
 
-// ==============================
-// ▼サーバー起動
-// ==============================
+// ***************************************
+// サーバー起動
+// ***************************************
 
 app.listen(PORT, () => {
   console.log(`サーバー起動完了。ポート番号: ${PORT}`);
