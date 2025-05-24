@@ -324,21 +324,40 @@ app.post("/webhook", async (req, res) => {
             state.area2 = userMessage;
             state.step = 3;
             await replyQuickReply(replyToken, "どんな気分で整いたいですか？", [
-              { label: "リフレッシュ", text: "リフレッシュ　ストレス　マッサージ" },
-              { label: "ゆったり静か", text: "ゆったり　静か　混雑してない" },
-              { label: "ガチ勢", text: "高温　灼熱　水風呂キンキン　サウナハット" },
-              { label: "グループ", text: "会話OK　友人　カップル　夫婦" },
-              { label: "プライベート", text: "プライベートサウナ" },
-              { label: "自然・景色", text: "自然　景色　川サウナ　湖畔サウナ" },
+              { label: "リフレッシュ", text: "リフレッシュ" },
+              { label: "ゆったり静か", text: "ゆったり静か" },
+              { label: "ガチ勢", text: "ガチ勢" },
               { label: "初心者", text: "初心者" },
               { label: "男性専用施設", text: "男性専用施設" },
+              { label: "グループ", text: "グループ" },
+              { label: "プライベート", text: "プライベート" },
+              { label: "自然・景色", text: "自然・景色" },
             ]);
             return res.sendStatus(200);
           case 3:
-            const mood = userMessage;
+            const mood = "";
             const area2 = state.area2;
             delete userStates[userId];
 
+            switch(userMessage){
+              case "リフレッシュ":
+                mood = `リフレッシュ　ストレス　マッサージ`;
+              case "ゆったり静か":
+                mood = `ゆったり　静か　混雑してない`;
+              case "ガチ勢":
+                mood = `高温　灼熱　水風呂キンキン　サウナハット`;
+              case "グループ":
+                mood = "会話　友人　カップル　夫婦";
+              case "プライベート":
+                mood = "プライベートサウナ";
+              case "自然・景色":
+                mood = "自然　景色　川サウナ　湖畔サウナ";
+              case "初心者":
+                mood = "初心者";
+              case "男性専用施設":
+                mood = "男性専用施設";                
+            }
+              
             // LINEに返信を送る（回答準備中メッセージ）
             await replyText(
               replyToken,
