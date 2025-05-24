@@ -123,10 +123,10 @@ app.post("/webhook", async (req, res) => {
           return res.sendStatus(200);
 
         case "サウナあるある":
-          userStates[userId] = "idle";
+          userStates[userId] = "flgSaunaAruAru";
           await replyText(
             replyToken,
-            "現在準備中です✨準備中って書いてあるの、読めなかった系サウナ人？"
+            "あなたのコメントをサウナあるあるで例えます！メッセージをどうぞ！"
           );
           return res.sendStatus(200);
 
@@ -134,7 +134,7 @@ app.post("/webhook", async (req, res) => {
           userStates[userId] = "idle";
           await replyText(
             replyToken,
-            "現在準備中です✨そのタップ、未来に生きすぎてて、こちら追いつけませんわ！"
+            "現在準備中です✨準備中って書いてあるの、読めなかった系サウナ人？"
           );
           return res.sendStatus(200);
 
@@ -231,6 +231,61 @@ app.post("/webhook", async (req, res) => {
       }
 
       // ***************************************
+      // サウナあるあるの場合
+      // ***************************************
+      if (userStates[userId] === "flgSaunaBrain") {
+        userStates[userId] = "idle"; // 1度限り許可
+
+        // LINEに返信を送る（回答準備中メッセージ）
+        await replyText(
+          replyToken,
+          "少々お待ちを🧖‍♂️ちょっとサウナに入って『あるある』整え中…♨️"
+        );
+
+        // ChatGPTに問い合わせ
+        try {
+          // OpenAIのChatGPTにメッセージ送信
+          const gptRes = await axios.post(
+            "https://api.openai.com/v1/chat/completions",
+            {
+              model: "o4-mini-2025-04-16",
+              messages: [
+                {
+                  role: "system",
+                  content: `あなたはユーザーからの質問に対してすべてサウナに例えて回答するQAアシスタントです。
+                 語尾には『〜しましょう！』『大丈夫です！』『いけますよ！』など、相手を励ますようなポジティブな表現やサウナ―が喜びそうな表現を使ってください。
+                 テンションは高すぎず爽やかで、応援する雰囲気で返答してください。
+                 回答は200字以内です。
+                 回答の締めの言葉は、サウナ観点とユーザーからの質問を掛け合わせて、『意味のイノベーション』意識した新たな言葉としてください。
+                 その際、読み方と解説をいれてください。『解説』って言葉は不要です。
+                 なお、読み方は漢字の部分だけでよいです。
+                 記載形式は、『新語（読み方）：解説』でお願いします。`,
+                },
+                { role: "user", content: userMessage },
+              ],
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${OPENAI_API_KEY}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          // ChatGPTの返答
+          const gptReply = gptRes.data.choices[0].message.content;
+
+          // LINEに返信を送る
+          await pushText(userId, gptReply);
+        } catch (error) {
+              console.error("GPT Error:", error.message);
+        }
+
+        // LINEサーバーへステータス200（正常）を返す
+        return res.sendStatus(200);
+      }
+      
+      // ***************************************
       // 気まぐれプランの場合
       // ***************************************
       if (
@@ -278,10 +333,20 @@ app.post("/webhook", async (req, res) => {
             const mood = userMessage;
             const area2 = state.area2;
             delete userStates[userId];
-            await replyText(replyToken, "少々お待ちを🧖‍♂️ちょっとサウナに入って『おすすめ施設』をととのえ中…………♨️");
+
+            // LINEに返信を送る（回答準備中メッセージ）
+            await replyText(
+             replyToken,
+             "少々お待ちを🧖‍♂️ちょっとサウナに入って『おすすめ施設』をととのえ中…………♨️"
+            );
+            
+            // プロンプト
             const prompt = `${area2}で${mood}気分にぴったりのサウナを探しています。おすすめは？`;
+
+            // ChatGPTに問い合わせ
             try {
-              const gptRes = await axios.post(
+             // OpenAIのChatGPTにメッセージ送信
+             const gptRes = await axios.post(
                 "https://api.openai.com/v1/chat/completions",
                 {
                   model: "o4-mini-2025-04-16",
