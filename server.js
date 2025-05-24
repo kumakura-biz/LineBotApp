@@ -142,9 +142,8 @@ app.post("/webhook", async (req, res) => {
           userStates[userId] = { step: 1 };
 
           // エリア選択（地方）
-          await replyQuickReply(replyToken, "どこのエリアで整いたいですか？", [
-            { label: "北海道", text: "北海道" },
-            { label: "東北", text: "東北" },
+          await replyQuickReply(replyToken, "どこの地方で整いたいですか？", [
+            { label: "北海道・東北", text: "北海道・東北" },
             { label: "関東", text: "関東" },
             { label: "北陸", text: "北陸" },
             { label: "甲信", text: "甲信" },
@@ -163,13 +162,132 @@ app.post("/webhook", async (req, res) => {
           ) {
             userStates[userId].area1 = userMessage;
             userStates[userId].step = 2;
-            
+
             switch (userStates[userId].area1) {
-              case "北海道":
-                
+              case "北海道・東北":
+                await replyQuickReply(
+                  replyToken,
+                  "どこの地域で整いたいですか？",
+                  [
+                    { label: "北海道", text: "北海道" },
+                    { label: "青森県", text: "青森県" },
+                    { label: "岩手県", text: "岩手県" },
+                    { label: "宮城県", text: "宮城県" },
+                    { label: "秋田県", text: "秋田県" },
+                    { label: "山形県", text: "山形県" },
+                    { label: "福島県", text: "福島県" },
+                  ]
+                );
+                return res.sendStatus(200);
+
+              case "関東":
+                await replyQuickReply(
+                  replyToken,
+                  "どこの地域で整いたいですか？",
+                  [
+                    { label: "茨城県", text: "茨城県" },
+                    { label: "栃木県", text: "栃木県" },
+                    { label: "群馬県", text: "群馬県" },
+                    { label: "埼玉県", text: "埼玉県" },
+                    { label: "千葉県", text: "千葉県" },
+                    { label: "東京都", text: "東京都" },
+                    { label: "神奈川県", text: "神奈川県" },
+                  ]
+                );
+                return res.sendStatus(200);
+
+              case "北陸":
+                await replyQuickReply(
+                  replyToken,
+                  "どこの地域で整いたいですか？",
+                  [
+                    { label: "新潟県", text: "新潟県" },
+                    { label: "富山県", text: "富山県" },
+                    { label: "石川県", text: "石川県" },
+                    { label: "福井県", text: "福井県" },
+                  ]
+                );
+                return res.sendStatus(200);
+
+              case "甲信":
+                await replyQuickReply(
+                  replyToken,
+                  "どこの地域で整いたいですか？",
+                  [
+                    { label: "山梨県", text: "山梨県" },
+                    { label: "長野県", text: "長野県" },
+                  ]
+                );
+                return res.sendStatus(200);
+
+              case "東海":
+                await replyQuickReply(
+                  replyToken,
+                  "どこの地域で整いたいですか？",
+                  [
+                    { label: "岐阜県", text: "岐阜県" },
+                    { label: "静岡県", text: "静岡県" },
+                    { label: "愛知県", text: "愛知県" },
+                    { label: "三重県", text: "三重県" },
+                  ]
+                );
+                return res.sendStatus(200);
+
+              case "近畿":
+                await replyQuickReply(
+                  replyToken,
+                  "どこの地域で整いたいですか？",
+                  [
+                    { label: "滋賀県", text: "滋賀県" },
+                    { label: "京都府", text: "京都府" },
+                    { label: "大阪府", text: "大阪府" },
+                    { label: "兵庫県", text: "兵庫県" },
+                    { label: "奈良県", text: "奈良県" },
+                    { label: "和歌山県", text: "和歌山県" },
+                  ]
+                );
+                return res.sendStatus(200);
+
+              case "中国":
+                await replyQuickReply(
+                  replyToken,
+                  "どこの地域で整いたいですか？",
+                  [
+                    { label: "鳥取県", text: "鳥取県" },
+                    { label: "島根県", text: "島根県" },
+                    { label: "岡山県", text: "岡山県" },
+                    { label: "広島県", text: "広島県" },
+                    { label: "山口県", text: "山口県" },
+                  ]
+                );
+                return res.sendStatus(200);
+
+              case "四国":
+                await replyQuickReply(
+                  replyToken,
+                  "どこの地域で整いたいですか？",
+                  [
+                    { label: "徳島県", text: "徳島県" },
+                    { label: "香川県", text: "香川県" },
+                    { label: "愛媛県", text: "愛媛県" },
+                    { label: "高知県", text: "高知県" },
+                  ]
+                );
+                return res.sendStatus(200);
+
+              case "九州・沖縄":
+                await replyQuickReply(
+                  replyToken,
+                  "どこの地域で整いたいですか？",
+                  [
+                    { label: "新潟県", text: "新潟県" },
+                    { label: "富山県", text: "富山県" },
+                    { label: "石川県", text: "石川県" },
+                    { label: "福井県", text: "福井県" },
+                  ]
+                );
+                return res.sendStatus(200);
             }
-              
-            
 
             await replyQuickReply(replyToken, "どんな気分で整いたいですか？", [
               { label: "リフレッシュ", text: "リフレッシュ" },
