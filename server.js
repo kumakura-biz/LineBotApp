@@ -5,10 +5,9 @@ const axios = require("axios");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ==============================
-// ▼設定（自分のトークンに置き換えてください）
-// ==============================
-
+// ***************************************
+// ▼設定
+// ***************************************
 // LINE Developersで発行したチャネルアクセストークン
 const CHANNEL_ACCESS_TOKEN = "WAQ0a7to4G9xei0mpUNCNZGaNAhx+rtEMIYGARyymFZUPVSZUOJgJx42wFX/k0It4sMU7rN2BCsgbW2RmcmzBXlh2PxMAYge8TGXK4N1Jj1v1P2Z0pbi8h5t9K9pE054HS0K3eyVbbdUjkxvUGs+TQdB04t89/1O/w1cDnyilFU=";
 
@@ -17,6 +16,35 @@ const OPENAI_API_KEY = "sk-proj-dQM6A3gbEHvYdnnbvQ3uER9FmdBS9rbYha6Ryvrjd7mX98U7
 
 // JSON形式のデータを受け取れるように設定
 app.use(express.json());
+
+// ユーザー状態保存用（開発用、サーバー再起動でリセット）
+const userStates = {}; // 例: { "Uxxxx": "awaitingFreeText" }
+
+// 共通関数：返信（reply）
+const replyText = async (token, text) => {
+  await axios.post("https://api.line.me/v2/bot/message/reply", {
+    replyToken: token,
+    messages: [{ type: "text", text }]
+  }, {
+    headers: {
+      Authorization: `Bearer ${CHANNEL_ACCESS_TOKEN}`,
+      "Content-Type": "application/json"
+    }
+  });
+};
+
+// 共通関数：Push送信
+const pushText = async (userId, text) => {
+  await axios.post("https://api.line.me/v2/bot/message/push", {
+    to: userId,
+    messages: [{ type: "text", text }]
+  }, {
+    headers: {
+      Authorization: `Bearer ${CHANNEL_ACCESS_TOKEN}`,
+      "Content-Type": "application/json"
+    }
+  });
+};
 
 // ==============================
 // ▼Webhookエンドポイント
@@ -35,7 +63,9 @@ app.post("/webhook", async (req, res) => {
       const replyToken = event.replyToken;           // 返信に必要なトークン
       const userId = event.source.userId; // pushメッセージ用に取得
 
+      // ***************************************
       // ステップ１：リッチメニューからの入力判定
+      // ***************************************
       if (userMessage === "サウナ脳語録") {
         await axios.post("https://api.line.me/v2/bot/message/reply", {
           replyToken,
@@ -54,7 +84,12 @@ app.post("/webhook", async (req, res) => {
         return res.sendStatus(200);
       }
       
+      
+      
+      
+      // ***************************************
       // ステップ２：まず即座に「整い中です…」と返信
+      // ***************************************
       await axios.post("https://api.line.me/v2/bot/message/reply", {
         replyToken,
         messages: [
@@ -70,7 +105,9 @@ app.post("/webhook", async (req, res) => {
         }
       });
       
+      // ***************************************
       // ステップ３：ChatGPTに問い合わせ
+      // ***************************************
       try {
         // OpenAIのChatGPTにメッセージ送信
         const gptRes = await axios.post(
