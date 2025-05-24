@@ -17,6 +17,14 @@ const CHANNEL_ACCESS_TOKEN =
 const OPENAI_API_KEY =
   "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";
 
+// Google APIキー
+const GOOGLE_API_KEY = 
+      "AIzaSyD0WWHV8zI8BwrPmvEN8TmAEAMRJrBe-OA"
+
+// Google検索エンジンID
+const GOOGLE_CX = 
+      "c0a13d84d771943a4"
+
 // JSON形式のデータを受け取れるように設定
 app.use(express.json());
 
@@ -344,8 +352,8 @@ axios.get("https://api.line.me/v2/bot/richmenu/list", {
             await replyText(
              replyToken,
              "少々お待ちを🧖‍♂️ちょっとサウナに入って『おすすめ施設』をととのえ中…………♨️"
-            );
-            
+            );              
+                    
             // プロンプト
             const prompt = `${area2}で${mood}気分にぴったりのサウナを探しています。おすすめは？`;
 
