@@ -280,10 +280,14 @@ app.post("/webhook", async (req, res) => {
                   replyToken,
                   "どこの地域で整いたいですか？",
                   [
-                    { label: "新潟県", text: "新潟県" },
-                    { label: "富山県", text: "富山県" },
-                    { label: "石川県", text: "石川県" },
-                    { label: "福井県", text: "福井県" },
+                    { label: "福岡県", text: "福岡県" },
+                    { label: "佐賀県", text: "佐賀県" },
+                    { label: "長崎県", text: "長崎県" },
+                    { label: "熊本県", text: "熊本県" },
+                    { label: "大分県", text: "大分県" },
+                    { label: "宮崎県", text: "宮崎県" },
+                    { label: "鹿児島県", text: "鹿児島県" },
+                    { label: "沖縄県", text: "沖縄県" },
                   ]
                 );
                 return res.sendStatus(200);
