@@ -36,13 +36,13 @@ app.post("/webhook", async (req, res) => {
       const userId = event.source.userId; // pushメッセージ用に取得
 
       // ステップ１：リッチメニューからの入力判定
-      if (userMessage === "サウナを探す") {
+      if (userMessage === "サウナ脳語録") {
         await axios.post("https://api.line.me/v2/bot/message/reply", {
           replyToken,
           messages: [
             {
               type: "text",
-              text: "地域や気分を入力してください🧖‍♂️ 例：渋谷でリフレッシュしたい"
+              text: "質問でも愚痴でもなんでもぶっちゃけてみませんか？サウナ脳でお答えします🧖‍"
             }
           ]
         }, {
