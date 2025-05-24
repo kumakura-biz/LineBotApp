@@ -353,7 +353,77 @@ axios.get("https://api.line.me/v2/bot/richmenu/list", {
              replyToken,
              "少々お待ちを🧖‍♂️ちょっとサウナに入って『おすすめ施設』をととのえ中…………♨️"
             );              
-                    
+            
+            // 検索クエリ
+            const searchQuery = `${area2} サウナ ${mood} おすすめ`;
+            
+              try {
+    // Google検索でスニペット取得
+    const googleRes = await axios.get("https://www.googleapis.com/customsearch/v1", {
+      params: {
+        key: GOOGLE_API_KEY,
+        cx: GOOGLE_CX,
+        q: searchQuery,
+        num: 3,
+      },
+    });
+
+    const items = googleRes.data.items || [];
+    const snippets = items.map((item) => `・${item.snippet}`).join('\n');
+
+    if (snippets.length === 0) {
+      await pushText(userId, "Google検索では関連情報が見つかりませんでした。");
+      return res.sendStatus(200);
+    }
+
+    // GPTに問い合わせ（スニペット + プロンプト）
+    const gptPrompt = `以下のGoogle検索スニペットを参考に、${area2}で「${mood}」気分に合うおすすめサウナ施設を3つまで紹介してください。`;
+
+    const gptRes = await axios.post(
+      "https://api.openai.com/v1/chat/completions",
+      {
+        model: "o4-mini-2025-04-16",
+        messages: [
+          {
+            role: "system",
+                      content: `あなたはユーザーから指定された地域と気分や、世の中のサウナ―の評価なども踏まえ、最適なサウナ施設を紹介するアシスタントです。
+                     紹介施設は3つを上限としてください。
+                     紹介された施設に訪問したくなるサウナ―の心をくすぐるような表現で紹介してください。
+                     その際、大袈裟で胡散臭い表現はやめてください。
+                     また、紹介施設のURLも提示してください。
+                     サウナの種類、水風呂の種類、外気浴有無、整いベッド有無、オートロウリュウ有無、アウフグース有無、マッサージ施設、食事施設なども提示情報に含めてください。
+                     いい感じに改行を含めてください。
+                     500文字以上などあまりにも回答文字数が多くなる場合は、URL参照でもOKです。`
+          },
+          {
+            role: "user",
+            content: `${gptPrompt}\n\nスニペット情報:\n${snippets}`,
+          },
+        ],
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${OPENAI_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    // GPTの返答
+    const gptReply = gptRes.data.choices[0].message.content;
+
+    // LINEに返信を送る
+    await pushText(userId, gptReply);
+  } catch (error) {
+    console.error("気まぐれプランエラー:", error.message);
+    await pushText(userId, "申し訳ありません、情報取得に失敗しました。");
+  }
+
+  // LINEサーバーへステータス200（正常）を返す
+  return res.sendStatus(200);
+            
+            
+            /*
             // プロンプト
             const prompt = `${area2}で${mood}気分にぴったりのサウナを探しています。おすすめは？`;
 
@@ -398,6 +468,7 @@ axios.get("https://api.line.me/v2/bot/richmenu/list", {
             
             // LINEサーバーへステータス200（正常）を返す
             return res.sendStatus(200);
+            */
         }
       }
 
