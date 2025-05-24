@@ -115,16 +115,10 @@ axios.get("https://api.line.me/v2/bot/richmenu/list", {
     Authorization: `Bearer ${CHANNEL_ACCESS_TOKEN}`
   }
 })
-.then(res => console.log(res.data.ri))
+      .then(res => console.log("Bot info:", res.data))
+//.then(res => res.data.richmenus.forEach(m => console.log(`${m.name}: ${m.richMenuId}`)))
 .catch(err => console.error(err.response?.data || err.message));
       
-.then(res => {
-  const menus = res.data.richmenus;
-  menus.forEach(menu => {
-    console.log(`名前: ${menu.name} / ID: ${menu.richMenuId}`);
-  });
-})
-.catch(err => console.error(err.response?.data || err.message));
       
       // ***************************************
       // リッチメニューからの入力判定
