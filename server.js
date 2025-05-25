@@ -126,6 +126,35 @@ app.post("/webhook", async (req, res) => {
       const replyToken = event.replyToken; // 返信に必要なトークン
       const userId = event.source.userId; // pushメッセージ用に取得
 
+      
+      
+const db = admin.firestore(); // Firestoreインスタンスの作成
+
+// ユーザー情報をFirestoreに登録する関数
+const saveUserInfo = async (userId, userInfo) => {
+  try {
+    const userRef = db.collection('users').doc(userId); // 'users'コレクション内にユーザーIDをドキュメント名として使います
+    await userRef.set(userInfo, { merge: true }); // ユーザー情報をFirestoreに保存、既存のデータがあればマージします
+    console.log(`ユーザー情報が正常に保存されました: ${userId}`);
+  } catch (error) {
+    console.error('ユーザー情報の保存中にエラーが発生しました:', error);
+  }
+};
+
+// 例: ユーザー情報を登録する
+//const userId = 'user123'; // ユーザーID（Firestore内で一意に識別されます）
+const userInfo = {
+  name: '山田太郎', // ユーザー名
+  email: 'taro@example.com', // ユーザーのメールアドレス
+  plan: 'flgBasicPlan', // サービスプラン
+  registrationDate: admin.firestore.FieldValue.serverTimestamp(), // 登録日時（サーバーのタイムスタンプ）
+};
+
+      
+// ユーザー情報をFirestoreに保存
+saveUserInfo(userId, userInfo);
+      
+      
       // ***************************************
       // リッチメニューからの入力判定
       // ***************************************
