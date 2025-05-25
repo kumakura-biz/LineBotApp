@@ -350,7 +350,7 @@ app.post("/webhook", async (req, res) => {
                 mood = `高温　灼熱　水風呂キンキン　サウナハット`;
                 break;
               case "グループ":
-                mood = `会話　友人　カップル　夫婦`;
+                mood = `会話　家族　友人　カップル　夫婦`;
                 break;
               case "プライベート":
                 mood = `プライベートサウナ`;
