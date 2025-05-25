@@ -5,6 +5,16 @@ const axios = require("axios");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+//**********************************************************
+const admin = require('firebase-admin');
+const serviceAccount = require('./firebase-adminsdk.json'); // サービスアカウントファイルのパス
+// Firebase初期化
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
+const db = admin.firestore(); // Firestoreインスタンスを作成
+//**********************************************************
+
 // *********************************************************************************************************************
 // 設定
 // *********************************************************************************************************************
