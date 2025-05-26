@@ -128,53 +128,48 @@ app.post("/webhook", async (req, res) => {
 
       
       
-const db = admin.firestore(); // Firestoreインスタンスの作成
+      const db = admin.firestore(); // Firestoreインスタンスの作成
 
-// ユーザー情報をFirestoreに登録する関数
-const saveUserInfo = async (userId, userInfo) => {
-  try {
-    const userRef = db.collection('users').doc(userId); // 'users'コレクション内にユーザーIDをドキュメント名として使います
-    await userRef.set(userInfo, { merge: true }); // ユーザー情報をFirestoreに保存、既存のデータがあればマージします
-    console.log(`ユーザー情報が正常に保存されました: ${userId}`);
-  } catch (error) {
-    console.error('ユーザー情報の保存中にエラーが発生しました:', error);
-  }
-};
-
-      console.log('');
+      // ユーザープロフィール情報を取得する関数
       const getUserProfile = async (userId) => {
-  try {
-    console.log('プロフィール取得開始');  // ログで関数が呼ばれたことを確認
-    const response = await axios.get(`https://api.line.me/v2/bot/profile/${userId}`, {
-      headers: {
-        Authorization: `Bearer ${CHANNEL_ACCESS_TOKEN}`
-      }
-    });
-
-    console.log('LINE APIレスポンス:', response.data);  // レスポンスを確認
-
-    const profile = response.data;
-    console.log('ユーザー名:', profile.displayName);
-  } catch (error) {
-    console.error('プロフィール取得エラー:', error.response ? error.response.data : error.message);  // エラーを詳細に表示
-    return null;  // 取得できなかった場合はnullを返す
-  }
-};
+      try {
+        console.log('プロフィール取得開始');  // ログで関数が呼ばれたことを確認
+        const response = await axios.get(`https://api.line.me/v2/bot/profile/${userId}`, {
+          headers: {
+            Authorization: `Bearer ${CHANNEL_ACCESS_TOKEN}`
+          }
+        });
+        const profile = response.data;
+        console.log('ユーザー名:', profile.displayName);
+        } catch (error) {
+          console.error('プロフィール取得エラー:', error.response ? error.response.data : error.message);  // エラーを詳細に表示
+          return null;  // 取得できなかった場合はnullを返す
+        }
+      };
       
+      // ユーザー情報をFirestoreに登録する関数
+      const saveUserInfo = async (userId, userInfo) => {
+        try {
+          const userRef = db.collection('users').doc(userId); // 'users'コレクション内にユーザーIDをドキュメント名として使います
+          await userRef.set(userInfo, { merge: true }); // ユーザー情報をFirestoreに保存、既存のデータがあればマージします
+          console.log(`ユーザー情報が正常に保存されました: ${userId}`);
+        } catch (error) {
+          console.error('ユーザー情報の保存中にエラーが発生しました:', error);
+        }
+      };
       
-// 例: ユーザー情報を登録する
-//const userId = 'user123'; // ユーザーID（Firestore内で一意に識別されます）
+      // ユーザープロフィール情報取得
+      const userProfile = await getUserProfile(userId); 
+
+// ユーザー情報を登録する
 const userInfo = {
   name: '山田太郎', // ユーザー名
   email: 'taro@example.com', // ユーザーのメールアドレス
   plan: 'flgBasicPlan', // サービスプラン
   registrationDate: admin.firestore.FieldValue.serverTimestamp(), // 登録日時（サーバーのタイムスタンプ）
 };
-
-      
 // ユーザー情報をFirestoreに保存
-saveUserInfo(userId, userInfo);
-      
+await saveUserInfo(userId, userInfo);
       
       // ***************************************
       // リッチメニューからの入力判定
