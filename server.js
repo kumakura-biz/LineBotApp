@@ -120,6 +120,7 @@ try {
   });
   const profile = response.data;
   console.log('ユーザー名:', profile.displayName);
+  return profile;
   } catch (error) {
     console.error('プロフィール取得エラー:', error.response ? error.response.data : error.message);  // エラーを詳細に表示
     return null;  // 取得できなかった場合はnullを返す
@@ -158,16 +159,16 @@ app.post("/webhook", async (req, res) => {
       // ユーザープロフィール情報取得
       try {
         const userProfile = await getUserProfile(userId);  // getUserProfileの非同期呼び出しをawaitで待機
-
+        
         // ユーザー情報を登録する
         const userInfo = {
-          name: userProfile.displayName,  // ユーザー名
-          email: '',  // ユーザーのメールアドレス
-          plan: 'flgBasicPlan',  // サービスプラン
-          language: userProfile.language,  // ユーザーの言語
-          registrationDate: admin.firestore.FieldValue.serverTimestamp(),  // 登録日時（サーバーのタイムスタンプ）
+          name: userProfile.displayName,                                  // ユーザー名
+          email: '',                                                      // ユーザーのメールアドレス
+          plan: 'flgBasicPlan',                                           // サービスプラン
+          language: userProfile.language,                                 // ユーザーの言語
+          pictureUrl: userProfile.pictureUrl,                             // ユーザー画像URL
+          registrationDate: admin.firestore.FieldValue.serverTimestamp(), // 登録日時（サーバーのタイムスタンプ）
         };
-
         // ユーザー情報をFirestoreに保存
         await saveUserInfo(userId, userInfo);  // saveUserInfoの非同期呼び出しをawaitで待機
       } catch (error) {
