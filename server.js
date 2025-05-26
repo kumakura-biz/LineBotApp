@@ -126,20 +126,21 @@ app.post("/webhook", async (req, res) => {
       const replyToken = event.replyToken; // 返信に必要なトークン
       const userId = event.source.userId; // pushメッセージ用に取得
 
-      
+      console.log(
 const db = admin.firestore(); // Firestoreインスタンスの作成
 // ユーザー情報をFirestoreに登録する関数
 const saveUserInfo = async (userId, userInfo) => {
   try {
-    const userRef = db.collection('users').doc(userId); // 'users'コレクション内にユーザーIDをドキュメント名として使います
-    await userRef.set(userInfo, { merge: true }); // ユーザー情報をFirestoreに保存、既存のデータがあればマージします
+    console.log('saveUserInfoが呼ばれました');  // ここで関数が呼ばれているか確認
+    const userRef = db.collection('users').doc(userId);  // 'users'コレクション内にユーザーIDをドキュメント名として使います
+    console.log('userRef:', userRef);  // ドキュメント参照が正しく作成されているか確認
+    await userRef.set(userInfo, { merge: true });  // ユーザー情報をFirestoreに保存、既存のデータがあればマージします
     console.log(`ユーザー情報が正常に保存されました: ${userId}`);
   } catch (error) {
     console.error('ユーザー情報の保存中にエラーが発生しました:', error);
   }
 };
 
-// ユーザーIDを使用してプロフィール情報を取得
 const getUserProfile = async (userId) => {
   try {
     const response = await axios.get(`https://api.line.me/v2/bot/profile/${userId}`, {
@@ -153,19 +154,19 @@ const getUserProfile = async (userId) => {
 
     // ユーザー情報を登録する
     const userInfo = {
-      name: profile.displayName, // ユーザー名
-      email: '', // メールアドレスはLINE APIから取得できない
-      plan: 'flgBasicPlan', // サービスプラン（仮の値）
-      registrationDate: admin.firestore.FieldValue.serverTimestamp(), // 登録日時（サーバータイムスタンプ）
+      name: profile.displayName,  // ユーザー名
+      email: '',  // メールアドレスはLINE APIから取得できない
+      plan: 'flgBasicPlan',  // サービスプラン（仮の値）
+      registrationDate: admin.firestore.FieldValue.serverTimestamp(),  // 登録日時（サーバータイムスタンプ）
     };
 
     // ユーザー情報をFirestoreに保存
-    await saveUserInfo(userId, userInfo); // `await`を追加して非同期処理が順番通りに実行されるようにします
+    await saveUserInfo(userId, userInfo);  // `await`を追加して非同期処理が順番通りに実行されるようにします
 
     return profile;  // プロフィール情報を返す
   } catch (error) {
     console.error('プロフィール取得エラー:', error);
-    return null;
+    return null;  // 取得できなかった場合はnullを返す
   }
 };
 
