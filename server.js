@@ -126,54 +126,54 @@ app.post("/webhook", async (req, res) => {
       const replyToken = event.replyToken; // 返信に必要なトークン
       const userId = event.source.userId; // pushメッセージ用に取得
 
-      console.log('aaa');
+      
       
 const db = admin.firestore(); // Firestoreインスタンスの作成
-      console.log('bbb');
+
 // ユーザー情報をFirestoreに登録する関数
 const saveUserInfo = async (userId, userInfo) => {
-   console.log('ccc');
   try {
-    console.log('saveUserInfoが呼ばれました');  // ここで関数が呼ばれているか確認
-    const userRef = db.collection('users').doc(userId);  // 'users'コレクション内にユーザーIDをドキュメント名として使います
-    console.log('userRef:', userRef);  // ドキュメント参照が正しく作成されているか確認
-    await userRef.set(userInfo, { merge: true });  // ユーザー情報をFirestoreに保存、既存のデータがあればマージします
+    const userRef = db.collection('users').doc(userId); // 'users'コレクション内にユーザーIDをドキュメント名として使います
+    await userRef.set(userInfo, { merge: true }); // ユーザー情報をFirestoreに保存、既存のデータがあればマージします
     console.log(`ユーザー情報が正常に保存されました: ${userId}`);
   } catch (error) {
     console.error('ユーザー情報の保存中にエラーが発生しました:', error);
   }
 };
 
-const getUserProfile = async (userId) => {
+      console.log('');
+      const getUserProfile = async (userId) => {
   try {
+    console.log('プロフィール取得開始');  // ログで関数が呼ばれたことを確認
     const response = await axios.get(`https://api.line.me/v2/bot/profile/${userId}`, {
       headers: {
         Authorization: `Bearer ${CHANNEL_ACCESS_TOKEN}`
       }
     });
 
+    console.log('LINE APIレスポンス:', response.data);  // レスポンスを確認
+
     const profile = response.data;
-    console.log('ユーザー名:', profile.displayName);  // ユーザー名を表示
-
-    // ユーザー情報を登録する
-    const userInfo = {
-      name: profile.displayName,  // ユーザー名
-      email: '',  // メールアドレスはLINE APIから取得できない
-      plan: 'flgBasicPlan',  // サービスプラン（仮の値）
-      registrationDate: admin.firestore.FieldValue.serverTimestamp(),  // 登録日時（サーバータイムスタンプ）
-    };
-
-    // ユーザー情報をFirestoreに保存
-    await saveUserInfo(userId, userInfo);  // `await`を追加して非同期処理が順番通りに実行されるようにします
-
-    return profile;  // プロフィール情報を返す
+    console.log('ユーザー名:', profile.displayName);
   } catch (error) {
-    console.error('プロフィール取得エラー:', error);
+    console.error('プロフィール取得エラー:', error.response ? error.response.data : error.message);  // エラーを詳細に表示
     return null;  // 取得できなかった場合はnullを返す
   }
 };
+      
+      
+// 例: ユーザー情報を登録する
+//const userId = 'user123'; // ユーザーID（Firestore内で一意に識別されます）
+const userInfo = {
+  name: '山田太郎', // ユーザー名
+  email: 'taro@example.com', // ユーザーのメールアドレス
+  plan: 'flgBasicPlan', // サービスプラン
+  registrationDate: admin.firestore.FieldValue.serverTimestamp(), // 登録日時（サーバーのタイムスタンプ）
+};
 
       
+// ユーザー情報をFirestoreに保存
+saveUserInfo(userId, userInfo);
       
       
       // ***************************************
