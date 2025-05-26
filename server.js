@@ -140,12 +140,23 @@ const saveUserInfo = async (userId, userInfo) => {
     console.error('ユーザー情報の保存中にエラーが発生しました:', error);
   }
 };
+console.log('aaa')
+      // ユーザーIDを使用してプロフィール情報を取得
+const getUserProfile = async (userId) => {
+  try {
+    const response = await axios.get(`https://api.line.me/v2/bot/profile/${userId}`, {
+      headers: {
+        Authorization: `Bearer ${CHANNEL_ACCESS_TOKEN}`
+      }
+    });
+console.log('b')
 
-// 例: ユーザー情報を登録する
-//const userId = 'user123'; // ユーザーID（Firestore内で一意に識別されます）
+    const profile = response.data;
+console.log('ユーザー名:', profile.displayName);  // ユーザー名を表示
+    // 例: ユーザー情報を登録する
 const userInfo = {
-  name: '山田太郎', // ユーザー名
-  email: 'taro@example.com', // ユーザーのメールアドレス
+  name: profile.displayName, // ユーザー名
+  email: '', // ユーザーのメールアドレス
   plan: 'flgBasicPlan', // サービスプラン
   registrationDate: admin.firestore.FieldValue.serverTimestamp(), // 登録日時（サーバーのタイムスタンプ）
 };
@@ -153,6 +164,14 @@ const userInfo = {
       
 // ユーザー情報をFirestoreに保存
 saveUserInfo(userId, userInfo);
+
+    return profile;  // プロフィール情報を返す
+  } catch (error) {
+    console.error('プロフィール取得エラー:', error);
+    return null;
+  }
+};
+      
       
       
       // ***************************************
