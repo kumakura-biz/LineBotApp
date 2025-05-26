@@ -127,9 +127,7 @@ app.post("/webhook", async (req, res) => {
       const userId = event.source.userId; // pushメッセージ用に取得
 
       
-      
 const db = admin.firestore(); // Firestoreインスタンスの作成
-
 // ユーザー情報をFirestoreに登録する関数
 const saveUserInfo = async (userId, userInfo) => {
   try {
@@ -140,8 +138,8 @@ const saveUserInfo = async (userId, userInfo) => {
     console.error('ユーザー情報の保存中にエラーが発生しました:', error);
   }
 };
-console.log('aaa')
-      // ユーザーIDを使用してプロフィール情報を取得
+
+// ユーザーIDを使用してプロフィール情報を取得
 const getUserProfile = async (userId) => {
   try {
     const response = await axios.get(`https://api.line.me/v2/bot/profile/${userId}`, {
@@ -149,21 +147,20 @@ const getUserProfile = async (userId) => {
         Authorization: `Bearer ${CHANNEL_ACCESS_TOKEN}`
       }
     });
-console.log('b')
 
     const profile = response.data;
-console.log('ユーザー名:', profile.displayName);  // ユーザー名を表示
-    // 例: ユーザー情報を登録する
-const userInfo = {
-  name: profile.displayName, // ユーザー名
-  email: '', // ユーザーのメールアドレス
-  plan: 'flgBasicPlan', // サービスプラン
-  registrationDate: admin.firestore.FieldValue.serverTimestamp(), // 登録日時（サーバーのタイムスタンプ）
-};
+    console.log('ユーザー名:', profile.displayName);  // ユーザー名を表示
 
-      
-// ユーザー情報をFirestoreに保存
-saveUserInfo(userId, userInfo);
+    // ユーザー情報を登録する
+    const userInfo = {
+      name: profile.displayName, // ユーザー名
+      email: '', // メールアドレスはLINE APIから取得できない
+      plan: 'flgBasicPlan', // サービスプラン（仮の値）
+      registrationDate: admin.firestore.FieldValue.serverTimestamp(), // 登録日時（サーバータイムスタンプ）
+    };
+
+    // ユーザー情報をFirestoreに保存
+    await saveUserInfo(userId, userInfo); // `await`を追加して非同期処理が順番通りに実行されるようにします
 
     return profile;  // プロフィール情報を返す
   } catch (error) {
@@ -171,6 +168,7 @@ saveUserInfo(userId, userInfo);
     return null;
   }
 };
+
       
       
       
