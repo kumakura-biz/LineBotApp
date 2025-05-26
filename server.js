@@ -126,10 +126,13 @@ app.post("/webhook", async (req, res) => {
       const replyToken = event.replyToken; // 返信に必要なトークン
       const userId = event.source.userId; // pushメッセージ用に取得
 
-      console.log(
+      console.log('aaa');
+      
 const db = admin.firestore(); // Firestoreインスタンスの作成
+      console.log('bbb');
 // ユーザー情報をFirestoreに登録する関数
 const saveUserInfo = async (userId, userInfo) => {
+   console.log('ccc');
   try {
     console.log('saveUserInfoが呼ばれました');  // ここで関数が呼ばれているか確認
     const userRef = db.collection('users').doc(userId);  // 'users'コレクション内にユーザーIDをドキュメント名として使います
