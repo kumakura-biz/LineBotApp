@@ -291,17 +291,16 @@ app.post("/webhook", async (req, res) => {
         
         // アクセス上限数チェック
         if (!canProceed) {
-        if (userPlan === 'flgBasicPlan') {
-          // Basicプラン用の処理
-          console.log('Basicプランです。');
-
-        } else if (userPlan === 'flgStandardPlan') {
-          // Standardプラン用の処理
-          console.log('Standardプランです。');
-
-        }
-          await pushText(userId, `${userPlan} のアクセス上限数に達しました。明日の利用、または、上位プランへのアップグレードをお願いします。`);
-          return res.sendStatus(200); // アクセス回数が制限されている場合はここで終了
+          if (userPlan === 'flgBasicPlan') {
+            // Basicプラン用の処理
+            await pushText(userId, `BasicPlan のアクセス上限数（1回）に達しました。明日以降の利用、または、上位プランへのアップグレードをお願いします🙇`);
+            return res.sendStatus(200); // アクセス回数が制限されている場合はここで終了
+          
+          } else if (userPlan === 'flgStandardPlan') {
+            // Standardプラン用の処理
+            await pushText(userId, `StandardPlan のアクセス上限数（3回）に達しました。明日以降の利用、または、上位プランへのアップグレードをお願いします🙇`);
+            return res.sendStatus(200); // アクセス回数が制限されている場合はここで終了
+          }
         }
 
         if (userPlan === 'flgBasicPlan') {
