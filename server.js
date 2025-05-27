@@ -127,19 +127,6 @@ try {
   }
 };
 
-/*
-// LINEユーザー情報をFirestoreに登録する関数
-const saveUserInfo = async (userId, userInfo) => {
-  try {
-    const userRef = db.collection('users').doc(userId); // 'users'コレクション内にユーザーIDをドキュメント名として使います
-    await userRef.set(userInfo, { merge: true }); // ユーザー情報をFirestoreに保存、既存のデータがあればマージします
-    console.log(`ユーザー情報が正常に保存されました: ${userId}`);
-  } catch (error) {
-    console.error('ユーザー情報の保存中にエラーが発生しました:', error);
-  }
-};
-*/
-
 // LINEユーザー情報の新規登録または更新する関数（登録/更新先：firestore）
 const getOrUpdateUserInfo = async (userId, userProfile) => {
   try {
@@ -153,8 +140,8 @@ const getOrUpdateUserInfo = async (userId, userProfile) => {
       const userInfo = {
         name: userProfile.displayName,
         email: '',
-        //plan: 'flgBasicPlan', // 初期プランとしてflgBasicPlanを設定
-        plan: 'flgProPlan', // 初期プランとしてflgBasicPlanを設定
+        plan: 'flgBasicPlan',  // 本運用：初期プランとしてflgBasicPlanを設定
+        //plan: 'flgProPlan',  // テスト中：flgProPlanを設定
         language: userProfile.language,
         pictureUrl: userProfile.pictureUrl,
         registrationDate: admin.firestore.FieldValue.serverTimestamp(),
@@ -171,7 +158,7 @@ const getOrUpdateUserInfo = async (userId, userProfile) => {
       if (lastAccessDate !== today) {
         // 日付が変わっていればカウントリセット
         await userRef.update({
-          accessCount: 0,  // 新しい日付なのでカウントは1から
+          accessCount: 0,  // 新しい日付なのでカウントは0から
           lastAccessDate: today,  // 今日の日付に更新
         });
         console.log(`ユーザー ${userId} のアクセスカウントがリセットされました。`);
@@ -292,13 +279,27 @@ app.post("/webhook", async (req, res) => {
       try {
         // LINEユーザープロフィール情報取得
         const userProfile = await getUserProfile(userId);
+        
         // LINEユーザー情報の新規登録or更新
         await getOrUpdateUserInfo(userId, userProfile);
+        
         // ユーザープラン情報取得
         const userPlan = await getUserPlan(userId);
+        
         // ユーザーのアクセス制限をチェック
         const canProceed = await checkAccessLimit(userId, userPlan);
+        
+        // アクセス上限数チェック
         if (!canProceed) {
+        if (userPlan === 'flgBasicPlan') {
+          // Basicプラン用の処理
+          console.log('Basicプランです。');
+
+        } else if (userPlan === 'flgStandardPlan') {
+          // Standardプラン用の処理
+          console.log('Standardプランです。');
+
+        }
           await pushText(userId, `${userPlan} のアクセス上限数に達しました。明日の利用、または、上位プランへのアップグレードをお願いします。`);
           return res.sendStatus(200); // アクセス回数が制限されている場合はここで終了
         }
@@ -324,34 +325,6 @@ app.post("/webhook", async (req, res) => {
         return res.status(500).send('エラーが発生しました');
       }
 
-      
-      
-      
-      
-      /*
-      // ユーザープロフィール情報取得
-      try {
-        const userProfile = await getUserProfile(userId);  // getUserProfileの非同期呼び出しをawaitで待機
-        
-        // ユーザー情報を登録する
-        const userInfo = {
-          name: userProfile.displayName,                                  // ユーザー名
-          email: '',                                                      // ユーザーのメールアドレス
-          plan: 'flgBasicPlan',                                           // サービスプラン
-          language: userProfile.language,                                 // ユーザーの言語
-          pictureUrl: userProfile.pictureUrl,                             // ユーザー画像URL
-          registrationDate: admin.firestore.FieldValue.serverTimestamp(), // 登録日時（サーバーのタイムスタンプ）
-        };
-        // ユーザー情報をFirestoreに保存
-        await saveUserInfo(userId, userInfo);  // saveUserInfoの非同期呼び出しをawaitで待機
-        console.log('新規ユーザー登録完了');
-      } catch (error) {
-        console.error('エラーが発生しました:', error);  // エラーを詳細にログ出力
-        // 必要に応じてエラーレスポンスを返す
-        return res.status(500).send('エラーが発生しました');
-      }
-      */
-          
       // ***************************************
       // リッチメニューからの入力判定
       // ***************************************
