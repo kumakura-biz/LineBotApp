@@ -77,7 +77,7 @@ const pushText = async (userId, text) => {
   );
 };
 
-// Quick Reply送信（共通関数）
+// Quick Reply送信
 const replyQuickReply = async (token, text, choices) => {
   const items = choices.map((c) => ({
     type: "action",
@@ -140,7 +140,7 @@ const saveUserInfo = async (userId, userInfo) => {
 };
 */
 
-// ユーザー情報を取得または更新する関数
+// LINEユーザー情報の新規登録または更新する関数（登録/更新先：firestore）
 const getOrUpdateUserInfo = async (userId, userProfile) => {
   try {
     const userRef = db.collection('users').doc(userId); // ユーザーIDでドキュメントを取得
@@ -171,7 +171,7 @@ const getOrUpdateUserInfo = async (userId, userProfile) => {
   }
 };
 
-// ユーザーのプラン情報を取得する関数
+// ユーザープラン情報を取得する関数
 const getUserPlan = async (userId) => {
   try {
     const userDoc = await db.collection('users').doc(userId).get();
@@ -186,6 +186,7 @@ const getUserPlan = async (userId) => {
     return null;
   }
 };
+
 // *********************************************************************************************************************
 // Webhookエンドポイント
 // *********************************************************************************************************************
@@ -204,7 +205,35 @@ app.post("/webhook", async (req, res) => {
       const userId = event.source.userId; // ユーザーID取得
       const db = admin.firestore(); // Firestoreインスタンスの作成
 
-      
+      // LINEユーザープロフィール情報取得
+      try {
+        const userProfile = await getUserProfile(userId);  // getUserProfileの非同期呼び出しをawaitで待機
+        
+        // LINEユーザー情報の新規登録or更新
+        await getOrUpdateUserInfo(userId, userProfile);
+      } catch (error) {
+        console.error('エラーが発生しました:', error);
+        return res.status(500).send('エラーが発生しました');
+      }
+
+      // ユーザープラン情報取得
+      const userPlan = await getUserPlan(userId);
+
+      if (userPlan === 'flgBasicPlan') {
+        // Basicプラン用の処理
+        console.log('Basicプランです。');
+
+      } else if (userPlan === 'flgStandardPlan') {
+        // Standardプラン用の処理
+        console.log('Standardプランです。');
+
+      } else if (userPlan === 'flgProPlan') {
+        // Proプラン用の処理
+        console.log('Proプランです。');
+
+      } else {
+        console.log('プラン情報が不明です。');
+      }      
       
       
       
@@ -232,11 +261,7 @@ app.post("/webhook", async (req, res) => {
         return res.status(500).send('エラーが発生しました');
       }
       */
-      
-      
-      
-      
-      
+          
       // ***************************************
       // リッチメニューからの入力判定
       // ***************************************
