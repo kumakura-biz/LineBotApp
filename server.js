@@ -328,31 +328,7 @@ app.post("/webhook", async (req, res) => {
       // リッチメニューからの入力判定
       // ***************************************
       switch (userMessage) {
-        case "サウナ脳語録":
-          userStates[userId] = "flgSaunaBrain";
-          await replyText(
-            replyToken,
-            "質問でも愚痴でもなんでも、メッセージで話かけてくれれば、サウナ脳でお答えします🧖‍"
-          );
-          return res.sendStatus(200);
-
-        case "サウナあるある":
-          userStates[userId] = "flgSaunaAruAru";
-          await replyText(
-            replyToken,
-            "あなたのコメントをサウナあるあるでお答えします。！メッセージをどうぞ！"
-          );
-          return res.sendStatus(200);
-
-        case "準備中２":
-          userStates[userId] = "idle";
-          await replyText(
-            replyToken,
-            "現在準備中です✨準備中って書いてあるの、読めなかった系サウナ人？"
-          );
-          return res.sendStatus(200);
-
-        case "気まぐれプラン":
+        case "Sauna Search":
           userStates[userId] = { plan: "flgBasicPlan", step: 1 };
 
           // エリア選択（地方）
@@ -369,19 +345,35 @@ app.post("/webhook", async (req, res) => {
           ]);
           return res.sendStatus(200);
 
-        case "整いマイスタープラン":
+        case "Sauna Search - Pro Plan":
           userStates[userId] = "idle";
           await replyText(
             replyToken,
-            "『整いマイスタープラン』はただいま蒸され中…♨️ 押すな”って書いてあるボタン押すタイプでしょ、あなた？"
+            "『Sauna Search - Pro Plan』はただいま蒸され中…♨️ 押すな”って書いてあるボタン押すタイプでしょ、あなた？"
           );
           return res.sendStatus(200);
 
-        case "サウナ仙人プラン":
+        case "Plan List":
           userStates[userId] = "idle";
           await replyText(
             replyToken,
-            "『サウナ仙人プラン』はただいま蒸され中…♨️ それ選ぶの、逆に才能。ツッコミ待ち選手権優勝！"
+            "『Plan List』はただいま蒸され中…♨️ Coming Soon って書いてあるの、読めなかった系サウナ人？"
+          );
+          return res.sendStatus(200);
+
+        case "Sauna脳語録":
+          userStates[userId] = "flgSaunaBrain";
+          await replyText(
+            replyToken,
+            "質問でも愚痴でもなんでも、メッセージで話かけてくれれば、サウナ脳でお答えします🧖‍"
+          );
+          return res.sendStatus(200);
+
+        case "Saunaあるある":
+          userStates[userId] = "flgSaunaAruAru";
+          await replyText(
+            replyToken,
+            "あなたのコメントをサウナあるあるでお答えします。！メッセージをどうぞ！"
           );
           return res.sendStatus(200);
       }
