@@ -153,7 +153,8 @@ const getOrUpdateUserInfo = async (userId, userProfile) => {
       const userInfo = {
         name: userProfile.displayName,
         email: '',
-        plan: 'flgBasicPlan', // 初期プランとしてflgBasicPlanを設定
+        //plan: 'flgBasicPlan', // 初期プランとしてflgBasicPlanを設定
+        plan: 'flgProPlan', // 初期プランとしてflgBasicPlanを設定
         language: userProfile.language,
         pictureUrl: userProfile.pictureUrl,
         registrationDate: admin.firestore.FieldValue.serverTimestamp(),
@@ -198,8 +199,8 @@ const getUserPlan = async (userId) => {
   }
 };
 
-// ユーザープラン情報を取得する関数
-const getUserPlan = async (userId) => {
+// ユーザーアクセスカウント情報を取得する関数
+const getAccessLimit = async (userId) => {
   try {
     const userDoc = await db.collection('users').doc(userId).get();
     if (!userDoc.exists) {
@@ -207,9 +208,9 @@ const getUserPlan = async (userId) => {
       return null;
     }
     const userData = userDoc.data();
-    return userData.plan;  // プラン情報を返す
+    return userData.accessCount; 
   } catch (error) {
-    console.error('ユーザープラン情報取得でエラーが発生しました:', error);
+    console.error('ユーザーアクセスカウント情報取得でエラーが発生しました:', error);
     return null;
   }
 };
@@ -226,11 +227,13 @@ const checkAccessLimit = async (userId, plan) => {
       const accessCount = userData.accessCount;
       if (plan === 'flgBasicPlan' && accessCount >= 1) {
         // Basicプランは1回まで
+        await incrementAccessCount(userId); // ユーザーが何回アクセスしたかを確認するためにインクリメント
         return false;
       }
 
       if (plan === 'flgStandardPlan' && accessCount >= 3) {
         // Standardプランは3回まで
+        await incrementAccessCount(userId); // ユーザーが何回アクセスしたかを確認するためにインクリメント
         return false;
       }
 
@@ -239,6 +242,33 @@ const checkAccessLimit = async (userId, plan) => {
     return null;
   }
   return true;
+};
+
+// アクセスカウントをインクリメントする関数
+const incrementAccessCount = async (userId) => {
+  try {
+    const userRef = db.collection('users').doc(userId); // ユーザーIDでドキュメントを取得
+    const userDoc = await userRef.get();
+
+    if (!userDoc.exists) {
+      console.log('ユーザーが見つかりません');
+      return false; // ユーザーが存在しない場合
+    }
+
+    const userData = userDoc.data();
+    const currentAccessCount = userData.accessCount || 0;
+
+    // アクセスカウントをインクリメント
+    await userRef.update({
+      accessCount: currentAccessCount + 1,
+    });
+
+    console.log(`ユーザー ${userId} のアクセスカウントがインクリメントされました。`);
+    return true;
+  } catch (error) {
+    console.error('アクセスカウントのインクリメント中にエラーが発生しました:', error);
+    return false;
+  }
 };
 
 // *********************************************************************************************************************
@@ -431,9 +461,16 @@ app.post("/webhook", async (req, res) => {
 
           // ChatGPTの返答
           const gptReply = gptRes.data.choices[0].message.content;
-
+          
           // LINEに返信を送る
           await pushText(userId, gptReply);
+          
+          // ユーザーアクセスカウントをインクリメント
+          const incremented = await incrementAccessCount(userId);
+          if (!incremented) {
+            return res.sendStatus(200); // インクリメント失敗の場合は終了
+          }
+
         } catch (error) {
           console.error("GPT Error:", error.message);
         }
@@ -485,6 +522,13 @@ app.post("/webhook", async (req, res) => {
 
           // LINEに返信を送る
           await pushText(userId, gptReply);
+          
+          // ユーザーアクセスカウントをインクリメント
+          const incremented = await incrementAccessCount(userId);
+          if (!incremented) {
+            return res.sendStatus(200); // インクリメント失敗の場合は終了
+          }
+
         } catch (error) {
           console.error("GPT Error:", error.message);
         }
@@ -655,6 +699,13 @@ app.post("/webhook", async (req, res) => {
 
               // LINEに返信を送る
               await pushText(userId, gptReply);
+              
+              // ユーザーアクセスカウントをインクリメント
+              const incremented = await incrementAccessCount(userId);
+              if (!incremented) {
+                return res.sendStatus(200); // インクリメント失敗の場合は終了
+              }
+              
             } catch (error) {
               console.error("気まぐれプランエラー:", error.message);
               await pushText(
