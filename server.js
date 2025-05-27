@@ -127,6 +127,7 @@ try {
   }
 };
 
+/*
 // LINEユーザー情報をFirestoreに登録する関数
 const saveUserInfo = async (userId, userInfo) => {
   try {
@@ -137,8 +138,40 @@ const saveUserInfo = async (userId, userInfo) => {
     console.error('ユーザー情報の保存中にエラーが発生しました:', error);
   }
 };
+*/
 
-// LINEユーザーのプラン情報を取得する関数
+// ユーザー情報を取得または更新する関数
+const getOrUpdateUserInfo = async (userId, userProfile) => {
+  try {
+    const userRef = db.collection('users').doc(userId); // ユーザーIDでドキュメントを取得
+    const userDoc = await userRef.get();
+
+    if (!userDoc.exists) {
+      // ユーザーが存在しない場合は新規登録
+      const userInfo = {
+        name: userProfile.displayName,
+        email: '',
+        plan: 'flgBasicPlan', // 初期プランとしてflgBasicPlanを設定
+        language: userProfile.language,
+        pictureUrl: userProfile.pictureUrl,
+        registrationDate: admin.firestore.FieldValue.serverTimestamp(),
+      };
+      await userRef.set(userInfo);  // ユーザー情報を新規登録
+      console.log(`新規ユーザー情報が正常に保存されました: ${userId}`);
+    } else {
+      // ユーザーが存在する場合はタイムスタンプのみ更新
+      const userInfo = {
+        registrationDate: admin.firestore.FieldValue.serverTimestamp(),  // 更新日時
+      };
+      await userRef.update(userInfo);  // タイムスタンプを更新
+      console.log(`既存ユーザー情報のタイムスタンプが更新されました: ${userId}`);
+    }
+  } catch (error) {
+    console.error('ユーザー情報の取得・更新中にエラーが発生しました:', error);
+  }
+};
+
+// ユーザーのプラン情報を取得する関数
 const getUserPlan = async (userId) => {
   try {
     const userDoc = await db.collection('users').doc(userId).get();
@@ -153,7 +186,6 @@ const getUserPlan = async (userId) => {
     return null;
   }
 };
-
 // *********************************************************************************************************************
 // Webhookエンドポイント
 // *********************************************************************************************************************
@@ -172,6 +204,12 @@ app.post("/webhook", async (req, res) => {
       const userId = event.source.userId; // ユーザーID取得
       const db = admin.firestore(); // Firestoreインスタンスの作成
 
+      
+      
+      
+      
+      
+      /*
       // ユーザープロフィール情報取得
       try {
         const userProfile = await getUserProfile(userId);  // getUserProfileの非同期呼び出しをawaitで待機
@@ -193,6 +231,11 @@ app.post("/webhook", async (req, res) => {
         // 必要に応じてエラーレスポンスを返す
         return res.status(500).send('エラーが発生しました');
       }
+      */
+      
+      
+      
+      
       
       // ***************************************
       // リッチメニューからの入力判定
