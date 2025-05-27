@@ -660,7 +660,7 @@ app.post("/webhook", async (req, res) => {
       // ***************************************
       await replyText(replyToken, "メニューから操作を始めてください🧖‍♂️");
 
-      res.sendStatus(200);
+      return res.sendStatus(200);
     }
   }
 });
