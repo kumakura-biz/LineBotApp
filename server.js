@@ -109,7 +109,7 @@ const replyQuickReply = async (token, text, choices) => {
   );
 };
 
-// ユーザープロフィール情報を取得する関数
+// LINEユーザープロフィール情報を取得する関数
 const getUserProfile = async (userId) => {
 try {
   console.log('プロフィール取得開始');  // ログで関数が呼ばれたことを確認
@@ -127,7 +127,7 @@ try {
   }
 };
 
-// ユーザー情報をFirestoreに登録する関数
+// LINEユーザー情報をFirestoreに登録する関数
 const saveUserInfo = async (userId, userInfo) => {
   try {
     const userRef = db.collection('users').doc(userId); // 'users'コレクション内にユーザーIDをドキュメント名として使います
@@ -137,7 +137,23 @@ const saveUserInfo = async (userId, userInfo) => {
     console.error('ユーザー情報の保存中にエラーが発生しました:', error);
   }
 };
-      
+
+// LINEユーザーのプラン情報を取得する関数
+const getUserPlan = async (userId) => {
+  try {
+    const userDoc = await db.collection('users').doc(userId).get();
+    if (!userDoc.exists) {
+      console.log('ユーザーが見つかりません');
+      return null;
+    }
+    const userData = userDoc.data();
+    return userData.plan;  // プラン情報を返す
+  } catch (error) {
+    console.error('エラーが発生しました:', error);
+    return null;
+  }
+};
+
 // *********************************************************************************************************************
 // Webhookエンドポイント
 // *********************************************************************************************************************
@@ -171,6 +187,7 @@ app.post("/webhook", async (req, res) => {
         };
         // ユーザー情報をFirestoreに保存
         await saveUserInfo(userId, userInfo);  // saveUserInfoの非同期呼び出しをawaitで待機
+        console.log('新規ユーザー登録完了');
       } catch (error) {
         console.error('エラーが発生しました:', error);  // エラーを詳細にログ出力
         // 必要に応じてエラーレスポンスを返す
