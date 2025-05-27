@@ -140,7 +140,7 @@ const saveUserInfo = async (userId, userInfo) => {
 };
 */
 
-// LINEユーザー情報の新規登録または更新＆アクセスカウントを取得する関数（登録/更新先：firestore）
+// LINEユーザー情報の新規登録または更新する関数（登録/更新先：firestore）
 const getOrUpdateUserInfo = async (userId, userProfile) => {
   try {
     const userRef = db.collection('users').doc(userId); // ユーザーIDでドキュメントを取得
@@ -182,19 +182,45 @@ const getOrUpdateUserInfo = async (userId, userProfile) => {
         console.log(`ユーザー ${userId} のアクセスカウントがインクリメントされました。`);
       }
     }
-
-    // アクセスカウントとプランを返す
-    const userDocAfterUpdate = await userRef.get();  // 更新後のデータを再取得
-    const updatedUserData = userDocAfterUpdate.data();
-    return {
-      accessCount: updatedUserData.accessCount || 0,
-      plan: updatedUserData.plan,
-    };
-
   } catch (error) {
     console.error('ユーザー情報の取得・更新中にエラーが発生しました:', error);
     return null;
   }
+};
+
+// アクセス回数を確認する関数
+const checkAccessLimit = async (userId, plan) => {
+    try {
+    const userDoc = await db.collection('users').doc(userId).get();
+    if (!userDoc.exists) {
+      console.log('ユーザーが見つかりません');
+      return null;
+    }
+    const userData = userDoc.data();
+    const accessCount = userData.accessCount;
+    if (plan === 'flgBasicPlan' && accessCount >= 1) {
+      // Basicプランは1回まで
+      await replyText(userId, "アクセス回数の上限に達しました。");
+      return false;
+    }
+
+    if (plan === 'flgStandardPlan' && accessCount >= 3) {
+      // Standardプランは3回まで
+      await replyText(userId, "アクセス回数の上限に達しました。");
+      return false;
+    }
+
+    // Proプランは無制限なので、回数制限なし
+      if (plan === 'flgProPlan' && accessCount >= 1) {
+      // 無制限だが、カウントを1回以上にしておく
+      await replyText(userId, "アクセス可能です。");
+    }
+
+  } catch (error) {
+    console.error('エラーが発生しました:', error);
+    return null;
+  }
+  return true;
 };
 
 // ユーザープラン情報を取得する関数
@@ -231,12 +257,13 @@ app.post("/webhook", async (req, res) => {
       const userId = event.source.userId; // ユーザーID取得
       const db = admin.firestore(); // Firestoreインスタンスの作成
 
-      // LINEユーザープロフィール情報取得
+      // 新規会員登録 or 更新
       try {
-        const userProfile = await getUserProfile(userId);  // getUserProfileの非同期呼び出しをawaitで待機
-        
+        // LINEユーザープロフィール情報取得
+        const userProfile = await getUserProfile(userId);
         // LINEユーザー情報の新規登録or更新
         await getOrUpdateUserInfo(userId, userProfile);
+        
       } catch (error) {
         console.error('エラーが発生しました:', error);
         return res.status(500).send('エラーが発生しました');
