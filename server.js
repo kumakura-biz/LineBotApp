@@ -157,7 +157,7 @@ const getOrUpdateUserInfo = async (userId, userProfile) => {
         language: userProfile.language,
         pictureUrl: userProfile.pictureUrl,
         registrationDate: admin.firestore.FieldValue.serverTimestamp(),
-        accessCount: 0,  // 初期アクセス回数
+        accessCount: 1,  // 初期アクセス回数
         lastAccessDate: today,  // 初回アクセス日の設定
       };
       await userRef.set(userInfo);  // ユーザー情報を新規登録
@@ -170,10 +170,16 @@ const getOrUpdateUserInfo = async (userId, userProfile) => {
       if (lastAccessDate !== today) {
         // 日付が変わっていればカウントリセット
         await userRef.update({
-          accessCount: 0,
+          accessCount: 1,  // 新しい日付なのでカウントは1から
           lastAccessDate: today,  // 今日の日付に更新
         });
         console.log(`ユーザー ${userId} のアクセスカウントがリセットされました。`);
+      } else {
+        // 既に今日のアクセスがある場合、アクセスカウントをインクリメント
+        await userRef.update({
+          accessCount: userData.accessCount + 1,  // 既存のカウントをインクリメント
+        });
+        console.log(`ユーザー ${userId} のアクセスカウントがインクリメントされました。`);
       }
     }
 
