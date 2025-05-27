@@ -140,11 +140,13 @@ const saveUserInfo = async (userId, userInfo) => {
 };
 */
 
-// LINEユーザー情報の新規登録または更新する関数（登録/更新先：firestore）
+// LINEユーザー情報の新規登録または更新＆アクセスカウントを取得する関数（登録/更新先：firestore）
 const getOrUpdateUserInfo = async (userId, userProfile) => {
   try {
     const userRef = db.collection('users').doc(userId); // ユーザーIDでドキュメントを取得
     const userDoc = await userRef.get();
+
+    const today = new Date().toISOString().split('T')[0];  // 日付（YYYY-MM-DD）を取得
 
     if (!userDoc.exists) {
       // ユーザーが存在しない場合は新規登録
@@ -155,19 +157,37 @@ const getOrUpdateUserInfo = async (userId, userProfile) => {
         language: userProfile.language,
         pictureUrl: userProfile.pictureUrl,
         registrationDate: admin.firestore.FieldValue.serverTimestamp(),
+        accessCount: 0,  // 初期アクセス回数
+        lastAccessDate: today,  // 初回アクセス日の設定
       };
       await userRef.set(userInfo);  // ユーザー情報を新規登録
       console.log(`新規ユーザー情報が正常に保存されました: ${userId}`);
     } else {
-      // ユーザーが存在する場合はタイムスタンプのみ更新
-      const userInfo = {
-        registrationDate: admin.firestore.FieldValue.serverTimestamp(),  // 更新日時
-      };
-      await userRef.update(userInfo);  // タイムスタンプを更新
-      console.log(`既存ユーザー情報のタイムスタンプが更新されました: ${userId}`);
+      // ユーザーが存在する場合
+      const userData = userDoc.data();
+      const lastAccessDate = userData.lastAccessDate || "";  // 最後のアクセス日付
+
+      if (lastAccessDate !== today) {
+        // 日付が変わっていればカウントリセット
+        await userRef.update({
+          accessCount: 0,
+          lastAccessDate: today,  // 今日の日付に更新
+        });
+        console.log(`ユーザー ${userId} のアクセスカウントがリセットされました。`);
+      }
     }
+
+    // アクセスカウントとプランを返す
+    const userDocAfterUpdate = await userRef.get();  // 更新後のデータを再取得
+    const updatedUserData = userDocAfterUpdate.data();
+    return {
+      accessCount: updatedUserData.accessCount || 0,
+      plan: updatedUserData.plan,
+    };
+
   } catch (error) {
     console.error('ユーザー情報の取得・更新中にエラーが発生しました:', error);
+    return null;
   }
 };
 
