@@ -188,41 +188,6 @@ const getOrUpdateUserInfo = async (userId, userProfile) => {
   }
 };
 
-// アクセス回数を確認する関数
-const checkAccessLimit = async (userId, plan) => {
-    try {
-    const userDoc = await db.collection('users').doc(userId).get();
-    if (!userDoc.exists) {
-      console.log('ユーザーが見つかりません');
-      return null;
-    }
-    const userData = userDoc.data();
-    const accessCount = userData.accessCount;
-    if (plan === 'flgBasicPlan' && accessCount >= 1) {
-      // Basicプランは1回まで
-      await replyText(userId, "アクセス回数の上限に達しました。");
-      return false;
-    }
-
-    if (plan === 'flgStandardPlan' && accessCount >= 3) {
-      // Standardプランは3回まで
-      await replyText(userId, "アクセス回数の上限に達しました。");
-      return false;
-    }
-
-    // Proプランは無制限なので、回数制限なし
-      if (plan === 'flgProPlan' && accessCount >= 1) {
-      // 無制限だが、カウントを1回以上にしておく
-      await replyText(userId, "アクセス可能です。");
-    }
-
-  } catch (error) {
-    console.error('エラーが発生しました:', error);
-    return null;
-  }
-  return true;
-};
-
 // ユーザープラン情報を取得する関数
 const getUserPlan = async (userId) => {
   try {
@@ -234,9 +199,40 @@ const getUserPlan = async (userId) => {
     const userData = userDoc.data();
     return userData.plan;  // プラン情報を返す
   } catch (error) {
-    console.error('エラーが発生しました:', error);
+    console.error('ユーザープラン情報取得でエラーが発生しました:', error);
     return null;
   }
+};
+
+// アクセス回数を確認する関数
+const checkAccessLimit = async (userId, plan) => {
+    try {
+      const userDoc = await db.collection('users').doc(userId).get();
+      if (!userDoc.exists) {
+        console.log('ユーザーが見つかりません');
+        return null;
+      }
+      const userData = userDoc.data();
+      const accessCount = userData.accessCount;
+      if (plan === 'flgBasicPlan' && accessCount > 1) {
+        // Basicプランは1回まで
+        return false;
+      }
+
+      if (plan === 'flgStandardPlan' && accessCount >= 3) {
+        // Standardプランは3回まで
+        return false;
+      }
+
+      // Proプランは無制限なので、回数制限なし
+        if (plan === 'flgProPlan' && accessCount >= 1) {
+        // 無制限だが、カウントを1回以上にしておく
+      }
+  } catch (error) {
+    console.error('アクセス回数チェックでエラーが発生しました:', error);
+    return null;
+  }
+  return true;
 };
 
 // *********************************************************************************************************************
@@ -257,36 +253,41 @@ app.post("/webhook", async (req, res) => {
       const userId = event.source.userId; // ユーザーID取得
       const db = admin.firestore(); // Firestoreインスタンスの作成
 
-      // 新規会員登録 or 更新
       try {
         // LINEユーザープロフィール情報取得
         const userProfile = await getUserProfile(userId);
         // LINEユーザー情報の新規登録or更新
         await getOrUpdateUserInfo(userId, userProfile);
+        // ユーザープラン情報取得
+        const userPlan = await getUserPlan(userId);
+        // ユーザーのアクセス制限をチェック
+        const canProceed = await checkAccessLimit(userId, userPlan);
+        if (!canProceed) {
+          await pushText(userId, `${userPlan} のアクセス上限数に達しました。明日の利用、または、プラングレードアップをお願いします。`);
+          return res.sendStatus(200); // アクセス回数が制限されている場合はここで終了
+        }
+
+        if (userPlan === 'flgBasicPlan') {
+          // Basicプラン用の処理
+          console.log('Basicプランです。');
+
+        } else if (userPlan === 'flgStandardPlan') {
+          // Standardプラン用の処理
+          console.log('Standardプランです。');
+
+        } else if (userPlan === 'flgProPlan') {
+          // Proプラン用の処理
+          console.log('Proプランです。');
+
+        } else {
+          console.log('プラン情報が不明です。');
+        }      
         
       } catch (error) {
         console.error('エラーが発生しました:', error);
         return res.status(500).send('エラーが発生しました');
       }
 
-      // ユーザープラン情報取得
-      const userPlan = await getUserPlan(userId);
-
-      if (userPlan === 'flgBasicPlan') {
-        // Basicプラン用の処理
-        console.log('Basicプランです。');
-
-      } else if (userPlan === 'flgStandardPlan') {
-        // Standardプラン用の処理
-        console.log('Standardプランです。');
-
-      } else if (userPlan === 'flgProPlan') {
-        // Proプラン用の処理
-        console.log('Proプランです。');
-
-      } else {
-        console.log('プラン情報が不明です。');
-      }      
       
       
       
