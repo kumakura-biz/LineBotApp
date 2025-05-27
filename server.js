@@ -157,7 +157,7 @@ const getOrUpdateUserInfo = async (userId, userProfile) => {
         language: userProfile.language,
         pictureUrl: userProfile.pictureUrl,
         registrationDate: admin.firestore.FieldValue.serverTimestamp(),
-        accessCount: 1,  // 初期アクセス回数
+        accessCount: 0,  // 初期アクセス回数
         lastAccessDate: today,  // 初回アクセス日の設定
       };
       await userRef.set(userInfo);  // ユーザー情報を新規登録
@@ -170,20 +170,30 @@ const getOrUpdateUserInfo = async (userId, userProfile) => {
       if (lastAccessDate !== today) {
         // 日付が変わっていればカウントリセット
         await userRef.update({
-          accessCount: 1,  // 新しい日付なのでカウントは1から
+          accessCount: 0,  // 新しい日付なのでカウントは1から
           lastAccessDate: today,  // 今日の日付に更新
         });
         console.log(`ユーザー ${userId} のアクセスカウントがリセットされました。`);
-      } else {
-        // 既に今日のアクセスがある場合、アクセスカウントをインクリメント
-        await userRef.update({
-          accessCount: userData.accessCount + 1,  // 既存のカウントをインクリメント
-        });
-        console.log(`ユーザー ${userId} のアクセスカウントがインクリメントされました。`);
       }
     }
   } catch (error) {
     console.error('ユーザー情報の取得・更新中にエラーが発生しました:', error);
+    return null;
+  }
+};
+
+// ユーザープラン情報を取得する関数
+const getUserPlan = async (userId) => {
+  try {
+    const userDoc = await db.collection('users').doc(userId).get();
+    if (!userDoc.exists) {
+      console.log('ユーザーが見つかりません');
+      return null;
+    }
+    const userData = userDoc.data();
+    return userData.plan;  // プラン情報を返す
+  } catch (error) {
+    console.error('ユーザープラン情報取得でエラーが発生しました:', error);
     return null;
   }
 };
@@ -214,7 +224,7 @@ const checkAccessLimit = async (userId, plan) => {
       }
       const userData = userDoc.data();
       const accessCount = userData.accessCount;
-      if (plan === 'flgBasicPlan' && accessCount > 1) {
+      if (plan === 'flgBasicPlan' && accessCount >= 1) {
         // Basicプランは1回まで
         return false;
       }
@@ -224,10 +234,6 @@ const checkAccessLimit = async (userId, plan) => {
         return false;
       }
 
-      // Proプランは無制限なので、回数制限なし
-        if (plan === 'flgProPlan' && accessCount >= 1) {
-        // 無制限だが、カウントを1回以上にしておく
-      }
   } catch (error) {
     console.error('アクセス回数チェックでエラーが発生しました:', error);
     return null;
@@ -263,7 +269,7 @@ app.post("/webhook", async (req, res) => {
         // ユーザーのアクセス制限をチェック
         const canProceed = await checkAccessLimit(userId, userPlan);
         if (!canProceed) {
-          await pushText(userId, `${userPlan} のアクセス上限数に達しました。明日の利用、または、プラングレードアップをお願いします。`);
+          await pushText(userId, `${userPlan} のアクセス上限数に達しました。明日の利用、または、上位プランへのアップグレードをお願いします。`);
           return res.sendStatus(200); // アクセス回数が制限されている場合はここで終了
         }
 
