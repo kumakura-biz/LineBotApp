@@ -328,7 +328,7 @@ app.post("/webhook", async (req, res) => {
       // リッチメニューからの入力判定
       // ***************************************
       switch (userMessage) {
-        case "Sauna Search":
+        case "Sauna Search - Quick Select":
           userStates[userId] = { plan: "flgBasicPlan", step: 1 };
 
           // エリア選択（地方）
@@ -345,19 +345,19 @@ app.post("/webhook", async (req, res) => {
           ]);
           return res.sendStatus(200);
 
-        case "Sauna Search - Pro Plan":
+        case "Sauna Search - Your Choice":
           userStates[userId] = "idle";
           await replyText(
             replyToken,
-            "『Sauna Search - Pro Plan』はただいま蒸され中…♨️ 押すな”って書いてあるボタン押すタイプでしょ、あなた？"
+            "『Sauna Search - Your Choice』はただいま蒸され中…♨️ 押すな”って書いてあるボタン押すタイプでしょ、あなた？"
           );
           return res.sendStatus(200);
 
-        case "Plan List":
+        case "Plan Selection":
           userStates[userId] = "idle";
           await replyText(
             replyToken,
-            "『Plan List』はただいま蒸され中…♨️ Coming Soon って書いてあるの、読めなかった系サウナ人？"
+            "『Plan Selection』はただいま蒸され中…♨️ Coming Soon って書いてあるの、読めなかった系サウナ人？"
           );
           return res.sendStatus(200);
 
