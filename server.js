@@ -1,3 +1,6 @@
+// *********************************************************************************************************************
+// 事前設定
+// *********************************************************************************************************************
 // 必要なモジュールを読み込み
 const express = require("express");
 const axios = require("axios");
@@ -5,7 +8,9 @@ const axios = require("axios");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-//**********************************************************
+// JSON形式のデータを受け取れるように設定
+app.use(express.json());
+
 const admin = require('firebase-admin');
 const serviceAccount = require('./firebase-adminsdk.json'); // サービスアカウントファイルのパス
 // Firebase初期化
@@ -13,12 +18,14 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
 });
 const db = admin.firestore(); // Firestoreインスタンスを作成
-//**********************************************************
+
+// ユーザー状態保存用（開発用、サーバー再起動でリセット）
+const userStates = {};
+
 
 // *********************************************************************************************************************
-// 設定
+// 定義
 // *********************************************************************************************************************
-
 // LINE Developersで発行したチャネルアクセストークン
 const CHANNEL_ACCESS_TOKEN =
   "WAQ0a7to4G9xei0mpUNCNZGaNAhx+rtEMIYGARyymFZUPVSZUOJgJx42wFX/k0It4sMU7rN2BCsgbW2RmcmzBXlh2PxMAYge8TGXK4N1Jj1v1P2Z0pbi8h5t9K9pE054HS0K3eyVbbdUjkxvUGs+TQdB04t89/1O/w1cDnyilFU=";
@@ -33,11 +40,12 @@ const GOOGLE_API_KEY = "AIzaSyD0WWHV8zI8BwrPmvEN8TmAEAMRJrBe-OA";
 // Google検索エンジンID
 const GOOGLE_CX = "c0a13d84d771943a4";
 
-// JSON形式のデータを受け取れるように設定
-app.use(express.json());
-
-// ユーザー状態保存用（開発用、サーバー再起動でリセット）
-const userStates = {};
+const RICH_MENU_IDS = {
+  flgBasicPlan: "richmenu-a4d81c6dfbf45b7d298fb62294530754",
+  flgStandardPlan: "richmenu-9fc90b0a2078ff24ad6a1a45ea7e7b5d",
+  flgProPlan: "richmenu-60a4a37b66f874c74f924f3dfcacaf22",
+  flgNonActive: "richmenu-77554ddd18adb4cd961fc52e16c6ee52"
+};
 
 // *********************************************************************************************************************
 // 共通関数
@@ -255,6 +263,24 @@ const incrementAccessCount = async (userId) => {
   } catch (error) {
     console.error('アクセスカウントのインクリメント中にエラーが発生しました:', error);
     return false;
+  }
+};
+
+// リッチメニュー設定関数
+const linkRichMenuToUser = async (userId, richMenuId) => {
+  try {
+    await axios.post(
+      `https://api.line.me/v2/bot/user/${userId}/richmenu/${richMenuId}`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${CHANNEL_ACCESS_TOKEN}`,
+        },
+      }
+    );
+    console.log(`ユーザー ${userId} にリッチメニュー ${richMenuId} をリンクしました`);
+  } catch (error) {
+    console.error("リッチメニューリンクエラー:", error.response?.data || error.message);
   }
 };
 
