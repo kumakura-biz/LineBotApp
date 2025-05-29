@@ -43,7 +43,7 @@ const RICH_MENU_IDS = {
   flgBasicPlan: "richmenu-a4d81c6dfbf45b7d298fb62294530754",
   flgStandardPlan: "richmenu-9fc90b0a2078ff24ad6a1a45ea7e7b5d",
   flgProPlan: "richmenu-60a4a37b66f874c74f924f3dfcacaf22",
-  flgNonActive: "richmenu-77554ddd18adb4cd961fc52e16c6ee52"
+  flgNonActive: "richmenu-23715c022eba6e68d588c316e6e13411"
 };
 
 // *********************************************************************************************************************
