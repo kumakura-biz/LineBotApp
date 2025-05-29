@@ -266,7 +266,7 @@ const incrementAccessCount = async (userId) => {
   }
 };
 
-// リッチメニュー設定関数
+// リッチメニューを設定する関数
 const linkRichMenuToUser = async (userId, richMenuId) => {
   try {
     await axios.post(
@@ -303,6 +303,13 @@ app.post("/webhook", async (req, res) => {
       const db = admin.firestore(); // Firestoreインスタンスの作成
 
       try {
+        
+        // リッチメニュー設定（非活性）
+        const richMenuId = RICH_MENU_IDS[userPlan];
+        if (richMenuId) {
+          await linkRichMenuToUser(userId, richMenuId);
+        }        
+        
         // LINEユーザープロフィール情報取得
         const userProfile = await getUserProfile(userId);
         
@@ -311,6 +318,12 @@ app.post("/webhook", async (req, res) => {
         
         // ユーザープラン情報取得
         const userPlan = await getUserPlan(userId);
+        
+        // リッチメニュー設定（プラン）
+        const richMenuId = RICH_MENU_IDS[userPlan];
+        if (richMenuId) {
+          await linkRichMenuToUser(userId, richMenuId);
+        }
         
         // ユーザーのアクセス制限をチェック
         const canProceed = await checkAccessLimit(userId, userPlan);
@@ -329,6 +342,8 @@ app.post("/webhook", async (req, res) => {
           }
         }
 
+        
+        
         if (userPlan === 'flgBasicPlan') {
           // Basicプラン用の処理
           console.log('Basicプランです。');
