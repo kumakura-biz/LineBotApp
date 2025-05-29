@@ -22,9 +22,6 @@ const db = admin.firestore(); // Firestoreインスタンスを作成
 // ユーザー状態保存用（開発用、サーバー再起動でリセット）
 const userStates = {};
 
-// リッチメニューID
-const richMenuId = {};
-
 // *********************************************************************************************************************
 // 定義
 // *********************************************************************************************************************
@@ -304,6 +301,9 @@ app.post("/webhook", async (req, res) => {
       const userId = event.source.userId; // ユーザーID取得
       const db = admin.firestore(); // Firestoreインスタンスの作成
 
+      let userPlan = null;  // ユーザープラン
+      let richMenuId = null;  // リッチメニューID
+
       try {
         
         // リッチメニュー設定（非活性）
@@ -316,7 +316,7 @@ app.post("/webhook", async (req, res) => {
         await getOrUpdateUserInfo(userId, userProfile);
         
         // ユーザープラン情報取得
-        const userPlan = await getUserPlan(userId);
+        userPlan = await getUserPlan(userId);
                 
         // ユーザーのアクセス制限をチェック
         const canProceed = await checkAccessLimit(userId, userPlan);
@@ -469,7 +469,7 @@ app.post("/webhook", async (req, res) => {
           }
           
           // リッチメニュー設定（プラン）
-          richMenuId = RICH_MENU_IDS[await getUserPlan(userId)];
+          richMenuId = RICH_MENU_IDS[userPlan];
           if (richMenuId) {
             await linkRichMenuToUser(userId, richMenuId);
           }
@@ -536,7 +536,7 @@ app.post("/webhook", async (req, res) => {
           }
 
           // リッチメニュー設定（プラン）
-          richMenuId = RICH_MENU_IDS[await getUserPlan(userId)];
+          richMenuId = RICH_MENU_IDS[userPlan];
           if (richMenuId) {
             await linkRichMenuToUser(userId, richMenuId);
           }
@@ -719,7 +719,7 @@ app.post("/webhook", async (req, res) => {
               }
               
               // リッチメニュー設定（プラン）
-              richMenuId = RICH_MENU_IDS[await getUserPlan(userId)];
+              richMenuId = RICH_MENU_IDS[userPlan];
               if (richMenuId) {
                 await linkRichMenuToUser(userId, richMenuId);
               }
@@ -790,7 +790,7 @@ app.post("/webhook", async (req, res) => {
       await replyText(replyToken, "メニューから操作を始めてください🧖‍♂️");
 
       // リッチメニュー設定（プラン）
-      richMenuId = RICH_MENU_IDS[await getUserPlan(userId)];
+      richMenuId = RICH_MENU_IDS[userPlan];
       if (richMenuId) {
         await linkRichMenuToUser(userId, richMenuId);
       }
