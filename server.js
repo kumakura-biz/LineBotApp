@@ -22,6 +22,8 @@ const db = admin.firestore(); // Firestoreインスタンスを作成
 // ユーザー状態保存用（開発用、サーバー再起動でリセット）
 const userStates = {};
 
+// リッチメニューID
+const richMenuId = {};
 
 // *********************************************************************************************************************
 // 定義
@@ -305,10 +307,7 @@ app.post("/webhook", async (req, res) => {
       try {
         
         // リッチメニュー設定（非活性）
-        const richMenuId = RICH_MENU_IDS[userPlan];
-        if (richMenuId) {
-          await linkRichMenuToUser(userId, richMenuId);
-        }        
+        await linkRichMenuToUser(userId, RICH_MENU_IDS["flgNonActive"]);
         
         // LINEユーザープロフィール情報取得
         const userProfile = await getUserProfile(userId);
@@ -318,13 +317,7 @@ app.post("/webhook", async (req, res) => {
         
         // ユーザープラン情報取得
         const userPlan = await getUserPlan(userId);
-        
-        // リッチメニュー設定（プラン）
-        const richMenuId = RICH_MENU_IDS[userPlan];
-        if (richMenuId) {
-          await linkRichMenuToUser(userId, richMenuId);
-        }
-        
+                
         // ユーザーのアクセス制限をチェック
         const canProceed = await checkAccessLimit(userId, userPlan);
         
@@ -474,6 +467,13 @@ app.post("/webhook", async (req, res) => {
           if (!incremented) {
             return res.sendStatus(200); // インクリメント失敗の場合は終了
           }
+          
+          // リッチメニュー設定（プラン）
+          richMenuId = RICH_MENU_IDS[await getUserPlan(userId)];
+          if (richMenuId) {
+            await linkRichMenuToUser(userId, richMenuId);
+          }
+
 
         } catch (error) {
           console.error("GPT Error:", error.message);
@@ -533,6 +533,12 @@ app.post("/webhook", async (req, res) => {
           const incremented = await incrementAccessCount(userId);
           if (!incremented) {
             return res.sendStatus(200); // インクリメント失敗の場合は終了
+          }
+
+          // リッチメニュー設定（プラン）
+          richMenuId = RICH_MENU_IDS[await getUserPlan(userId)];
+          if (richMenuId) {
+            await linkRichMenuToUser(userId, richMenuId);
           }
 
         } catch (error) {
@@ -712,6 +718,12 @@ app.post("/webhook", async (req, res) => {
                 return res.sendStatus(200); // インクリメント失敗の場合は終了
               }
               
+              // リッチメニュー設定（プラン）
+              richMenuId = RICH_MENU_IDS[await getUserPlan(userId)];
+              if (richMenuId) {
+                await linkRichMenuToUser(userId, richMenuId);
+              }
+              
             } catch (error) {
               console.error("気まぐれプランエラー:", error.message);
               await pushText(
@@ -776,6 +788,12 @@ app.post("/webhook", async (req, res) => {
       // リッチメニューからの操作でない場合
       // ***************************************
       await replyText(replyToken, "メニューから操作を始めてください🧖‍♂️");
+
+      // リッチメニュー設定（プラン）
+      richMenuId = RICH_MENU_IDS[await getUserPlan(userId)];
+      if (richMenuId) {
+        await linkRichMenuToUser(userId, richMenuId);
+      }
 
       return res.sendStatus(200);
     }
