@@ -283,6 +283,22 @@ const linkRichMenuToUser = async (userId, richMenuId) => {
   }
 };
 
+const unlinkRichMenuFromUser = async (userId) => {
+  try {
+    await axios.delete(
+      `https://api.line.me/v2/bot/user/${userId}/richmenu`,
+      {
+        headers: {
+          Authorization: `Bearer ${CHANNEL_ACCESS_TOKEN}`,
+        },
+      }
+    );
+    console.log(`ユーザー ${userId} のリッチメニューを非表示にしました`);
+  } catch (error) {
+    console.error("unlinkエラー:", error.response?.data || error.message);
+  }
+};
+
 // *********************************************************************************************************************
 // Webhookエンドポイント
 // *********************************************************************************************************************
@@ -306,8 +322,8 @@ app.post("/webhook", async (req, res) => {
 
       try {
         
-        // リッチメニュー設定（非活性）
-        await linkRichMenuToUser(userId, RICH_MENU_IDS["flgNonActive"]);
+        // リッチメニュー設定（非表示）
+        await unlinkRichMenuFromUser(userId);
         
         // LINEユーザープロフィール情報取得
         const userProfile = await getUserProfile(userId);
