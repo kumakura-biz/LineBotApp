@@ -323,13 +323,13 @@ app.post("/webhook", async (req, res) => {
       try {
         
         // リッチメニュー設定（非表示）
-        await unlinkRichMenuFromUser(userId);
+        //await unlinkRichMenuFromUser(userId);
         
         // リッチメニュー設定（プラン）
-        //richMenuId = RICH_MENU_IDS["flgNonActive"];
-        //if (richMenuId) {
-        //  await linkRichMenuToUser(userId, richMenuId);
-        //}
+        richMenuId = RICH_MENU_IDS["flgNonActive"];
+        if (richMenuId) {
+          await linkRichMenuToUser(userId, richMenuId);
+        }
         
         // LINEユーザープロフィール情報取得
         const userProfile = await getUserProfile(userId);
