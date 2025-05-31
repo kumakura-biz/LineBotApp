@@ -43,7 +43,8 @@ const RICH_MENU_IDS = {
   flgBasicPlan: "richmenu-a4d81c6dfbf45b7d298fb62294530754",
   flgStandardPlan: "richmenu-9fc90b0a2078ff24ad6a1a45ea7e7b5d",
   flgProPlan: "richmenu-60a4a37b66f874c74f924f3dfcacaf22",
-  flgNonActive: "richmenu-23715c022eba6e68d588c316e6e13411"
+  flgNonActive: "richmenu-23715c022eba6e68d588c316e6e13411",
+  flgRoading: "richmenu-145c8bee9732775cc2932e6fa4d8df02"
 };
 
 // *********************************************************************************************************************
@@ -326,7 +327,7 @@ app.post("/webhook", async (req, res) => {
         //await unlinkRichMenuFromUser(userId);
         
         // リッチメニュー設定（プラン）
-        richMenuId = RICH_MENU_IDS["flgNonActive"];
+        richMenuId = RICH_MENU_IDS["flgRoading"];
         if (richMenuId) {
           await linkRichMenuToUser(userId, richMenuId);
         }
@@ -459,7 +460,7 @@ app.post("/webhook", async (req, res) => {
         // LINEに返信を送る（回答準備中メッセージ）
         await replyText(
           replyToken,
-          "少々お待ちを🧖‍♂️ちょっとサウナに入ってととのえ中…♨️もう少しで“ととのった回答”をお届けします💨"
+          "少々お待ちを🧖‍♂️ちょっとサウナに入ってTotonoi Mode…♨️もう少しで“ととのった回答”をお届けします💨"
         );
 
         // ChatGPTに問い合わせ
@@ -527,7 +528,7 @@ app.post("/webhook", async (req, res) => {
         // LINEに返信を送る（回答準備中メッセージ）
         await replyText(
           replyToken,
-          "少々お待ちを🧖‍♂️インフィニティチェアーで『あるある』ととのえ中…♨️"
+          "少々お待ちを🧖‍♂️インフィニティチェアーで『あるある』Totonoi Mode…♨️"
         );
 
         // ChatGPTに問い合わせ
