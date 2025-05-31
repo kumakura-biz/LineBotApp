@@ -460,7 +460,7 @@ app.post("/webhook", async (req, res) => {
         // LINEに返信を送る（回答準備中メッセージ）
         await replyText(
           replyToken,
-          "少々お待ちを🧖‍♂️ちょっとサウナに入ってTotonoi Mode…♨️もう少しで“ととのった回答”をお届けします💨"
+          "水風呂で思考を冷やしています❄️整ったらすぐお届けしますので、そのままお待ちください🧖‍♂️"
         );
 
         // ChatGPTに問い合わせ
@@ -528,7 +528,7 @@ app.post("/webhook", async (req, res) => {
         // LINEに返信を送る（回答準備中メッセージ）
         await replyText(
           replyToken,
-          "少々お待ちを🧖‍♂️インフィニティチェアーで『あるある』Totonoi Mode…♨️"
+          "ただいま、Totonoi mode 発動…🌀深呼吸して、お待ちくださいませ🌿"
         );
 
         // ChatGPTに問い合わせ
@@ -667,7 +667,7 @@ app.post("/webhook", async (req, res) => {
             // LINEに返信を送る（回答準備中メッセージ）
             await replyText(
               replyToken,
-              "少々お待ちを🧖‍♂️ちょっとサウナに入って『おすすめ施設』をととのえ中…………♨️"
+              "ただいま熱波調整中🔥『おすすめ施設』回答までそのままお待ちください🧖‍♂️"
             );
 
             // 検索クエリ
