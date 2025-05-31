@@ -220,14 +220,15 @@ const checkAccessLimit = async (userId, plan) => {
       }
       const userData = userDoc.data();
       const accessCount = userData.accessCount;
-      if (plan === 'flgBasicPlan' && accessCount >= 1) {
-        // Basicプランは1回まで
+      
+      // Basicプランは1回まで
+      if (plan === 'flgBasicPlan' && accessCount >= 1) {        
         await incrementAccessCount(userId); // ユーザーが何回アクセスしたかを確認するためにインクリメント
         return false;
       }
-
+      
+      // Standardプランは3回まで
       if (plan === 'flgStandardPlan' && accessCount >= 3) {
-        // Standardプランは3回まで
         await incrementAccessCount(userId); // ユーザーが何回アクセスしたかを確認するためにインクリメント
         return false;
       }
@@ -284,6 +285,7 @@ const linkRichMenuToUser = async (userId, richMenuId) => {
   }
 };
 
+// リッチメニューを非表示に設定する関数
 const unlinkRichMenuFromUser = async (userId) => {
   try {
     await axios.delete(
