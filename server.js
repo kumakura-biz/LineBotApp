@@ -7,6 +7,8 @@ const express = require("express");
 const axios = require("axios");
 
 const app = express();
+// aaaaaaaaaaaaaaaaaaaaaaa
+
 const PORT = process.env.PORT || 3000;
 
 // JSON形式のデータを受け取れるように設定
