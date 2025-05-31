@@ -1,4 +1,5 @@
-// VSCode aaa
+//test 
+//aaa
 // *********************************************************************************************************************
 // 事前設定
 // *********************************************************************************************************************
@@ -6,9 +7,9 @@
 const express = require("express");
 const axios = require("axios");
 
-const app = express();
 // aaaaaaaaaaaaaaaaaaaaaaa
 
+const app = express();
 const PORT = process.env.PORT || 3000;
 
 // JSON形式のデータを受け取れるように設定
