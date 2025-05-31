@@ -351,11 +351,21 @@ app.post("/webhook", async (req, res) => {
           if (userPlan === 'flgBasicPlan') {
             // Basicプラン用の処理
             await pushText(userId, `BasicPlan のアクセス上限数（1回）に達しました。明日以降の利用、または、上位プランへのアップグレードをお願いします🙇`);
+            // リッチメニュー設定（プラン）
+            richMenuId = RICH_MENU_IDS[userPlan];
+            if (richMenuId) {
+              await linkRichMenuToUser(userId, richMenuId);
+            }
             return res.sendStatus(200); // アクセス回数が制限されている場合はここで終了
           
           } else if (userPlan === 'flgStandardPlan') {
             // Standardプラン用の処理
             await pushText(userId, `StandardPlan のアクセス上限数（3回）に達しました。明日以降の利用、または、上位プランへのアップグレードをお願いします🙇`);
+            // リッチメニュー設定（プラン）
+            richMenuId = RICH_MENU_IDS[userPlan];
+            if (richMenuId) {
+              await linkRichMenuToUser(userId, richMenuId);
+            }
             return res.sendStatus(200); // アクセス回数が制限されている場合はここで終了
           }
         }
