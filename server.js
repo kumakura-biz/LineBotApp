@@ -359,9 +359,9 @@ app.post("/webhook", async (req, res) => {
             return res.sendStatus(200); // アクセス回数が制限されている場合はここで終了
           }
         }
-
         
-        
+        /* リッチメニューでプラン制御しているため条件分岐不要 ※各プラン用のメニューであるため
+        // プラン条件分岐
         if (userPlan === 'flgBasicPlan') {
           // Basicプラン用の処理
           console.log('Basicプランです。');
@@ -377,6 +377,7 @@ app.post("/webhook", async (req, res) => {
         } else {
           console.log('プラン情報が不明です。');
         }      
+        */
         
       } catch (error) {
         console.error('エラーが発生しました:', error);
