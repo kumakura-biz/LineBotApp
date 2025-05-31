@@ -401,6 +401,13 @@ app.post("/webhook", async (req, res) => {
             replyToken,
             "『Sauna Search - Your Choice』はただいま蒸され中…♨️ 押すな”って書いてあるボタン押すタイプでしょ、あなた？"
           );
+
+          // リッチメニュー設定（プラン）
+          richMenuId = RICH_MENU_IDS[userPlan];
+          if (richMenuId) {
+            await linkRichMenuToUser(userId, richMenuId);
+          }
+
           return res.sendStatus(200);
 
         case "Plan Selection":
@@ -409,6 +416,12 @@ app.post("/webhook", async (req, res) => {
             replyToken,
             "『Plan Selection』はただいま蒸され中…♨️ Coming Soon って書いてあるの、読めなかった系サウナ人？"
           );
+          // リッチメニュー設定（プラン）
+          richMenuId = RICH_MENU_IDS[userPlan];
+          if (richMenuId) {
+            await linkRichMenuToUser(userId, richMenuId);
+          }
+
           return res.sendStatus(200);
 
         case "Sauna脳語録":
