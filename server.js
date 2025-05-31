@@ -504,15 +504,14 @@ app.post("/webhook", async (req, res) => {
             return res.sendStatus(200); // インクリメント失敗の場合は終了
           }
           
+        } catch (error) {
+          console.error("GPT Error:", error.message);
+        } finally {
           // リッチメニュー設定（プラン）
           richMenuId = RICH_MENU_IDS[userPlan];
           if (richMenuId) {
             await linkRichMenuToUser(userId, richMenuId);
-          }
-
-
-        } catch (error) {
-          console.error("GPT Error:", error.message);
+          }              
         }
 
         // LINEサーバーへステータス200（正常）を返す
@@ -571,14 +570,14 @@ app.post("/webhook", async (req, res) => {
             return res.sendStatus(200); // インクリメント失敗の場合は終了
           }
 
+        } catch (error) {
+          console.error("GPT Error:", error.message);
+        } finally {
           // リッチメニュー設定（プラン）
           richMenuId = RICH_MENU_IDS[userPlan];
           if (richMenuId) {
             await linkRichMenuToUser(userId, richMenuId);
-          }
-
-        } catch (error) {
-          console.error("GPT Error:", error.message);
+          }              
         }
 
         // LINEサーバーへステータス200（正常）を返す
@@ -586,7 +585,7 @@ app.post("/webhook", async (req, res) => {
       }
 
       // ***************************************
-      // 気まぐれプランの場合
+      // Basicプランの場合
       // ***************************************
       if (
         typeof userStates[userId] === "object" &&
@@ -753,70 +752,22 @@ app.post("/webhook", async (req, res) => {
               if (!incremented) {
                 return res.sendStatus(200); // インクリメント失敗の場合は終了
               }
-              
-              // リッチメニュー設定（プラン）
-              richMenuId = RICH_MENU_IDS[userPlan];
-              if (richMenuId) {
-                await linkRichMenuToUser(userId, richMenuId);
-              }
-              
+                            
             } catch (error) {
-              console.error("気まぐれプランエラー:", error.message);
+              console.error("Basicプランエラー:", error.message);
               await pushText(
                 userId,
                 "申し訳ありません、情報取得に失敗しました。"
               );
+            } finally {
+              // リッチメニュー設定（プラン）
+              richMenuId = RICH_MENU_IDS[userPlan];
+              if (richMenuId) {
+                await linkRichMenuToUser(userId, richMenuId);
+              }              
             }
-
             // LINEサーバーへステータス200（正常）を返す
             return res.sendStatus(200);
-
-          /*
-            // プロンプト
-            const prompt = `${area2}で${mood}気分にぴったりのサウナを探しています。おすすめは？`;
-
-            // ChatGPTに問い合わせ
-            try {
-             // OpenAIのChatGPTにメッセージ送信
-             const gptRes = await axios.post(
-                "https://api.openai.com/v1/chat/completions",
-                {
-                  model: "o4-mini-2025-04-16",
-                  messages: [
-                    {
-                      role: "system",
-                      content: `あなたはユーザーから指定された地域と気分や、世の中のサウナ―の評価なども踏まえ、最適なサウナ施設を紹介するアシスタントです。
-                     紹介施設は3つを上限としてください。
-                     紹介された施設に訪問したくなるサウナ―の心をくすぐるような表現で紹介してください。
-                     その際、大袈裟で胡散臭い表現はやめてください。
-                     また、紹介施設のURLも提示してください。
-                     サウナの種類、水風呂の種類、外気浴有無、整いベッド有無、オートロウリュウ有無、アウフグース有無、マッサージ施設、食事施設なども提示情報に含めてください。
-                     いい感じに改行を含めてください。
-                     500文字以上などあまりにも回答文字数が多くなる場合は、URL参照でもOKです。`
-                    },
-                    { role: "user", content: prompt },
-                  ],
-                },
-                {
-                  headers: {
-                    Authorization: `Bearer ${OPENAI_API_KEY}`,
-                    "Content-Type": "application/json",
-                  },
-                }
-              );
-              
-              // ChatGPTの返答
-              const gptReply = gptRes.data.choices[0].message.content;
-              
-              // LINEに返信を送る
-              await pushText(userId, gptReply);
-            } catch (error) {
-              console.error("GPT Error:", error.message);
-            }
-            
-            // LINEサーバーへステータス200（正常）を返す
-            return res.sendStatus(200);
-            */
         }
       }
 
